@@ -43,7 +43,7 @@ static N root = {
 	.ncall = 0,
 };
 static __thread N *sp = &root;
-static int sock;
+static int sock, stack;
 
 /* function definitions */
 /* Increment sample counters in the stack of the current thread. */
@@ -70,11 +70,34 @@ emit(void)
 	free(b.buf);
 }
 
+/* Send a JSON-encoded stacktrace to the wrapper. */
+static void
+stacktrace(int sig)
+{
+	B b = {0, 0, 0};
+	marshals(&b, sp, sig);
+	append(&b, "\n");
+	//dprintf(log, "stacktrace: %s", b.buf);
+	if (send(stack, b.buf, b.len, 0) == -1) {
+		dprintf(log, "stacktrace: send: %s\n", strerror(errno));
+	}
+	free(b.buf);
+}
+
+/* Handle some kind of error signal. */
+static void
+sigerr(int n)
+{
+	stacktrace(n);
+	_exit(42);
+}
+
 /* Set up signal handlers. */
 static void
 signals(void)
 {
-	struct sigaction prof, emit;
+	int errsig[] = {SIGSEGV, SIGILL, SIGFPE};
+	struct sigaction prof, emit, err;
 	sigaction(SIGPROF, NULL, &prof);
 	prof.sa_handler = sigprof;
 
@@ -82,6 +105,12 @@ signals(void)
 	 * does not avoid races between handlers in different threads. */
 	sigfillset(&prof.sa_mask);
 	sigaction(SIGPROF, &prof, NULL);
+
+	for (int i = 0; i < len(errsig); ++i) {
+		sigaction(errsig[i], NULL, &err);
+		err.sa_handler = sigerr;
+		sigaction(errsig[i], &err, NULL);
+	}
 }
 
 /* Emit profile data periodically. Implementing this as a interval timer +
@@ -118,17 +147,15 @@ comm(int type, char *prefix)
 	struct sockaddr_un remote;
 	int l, fd;
 	if ((fd = socket(AF_UNIX, type, 0)) == -1) {
+		dprintf(log, "comm: socket: %s\n", strerror(errno));
 		return 0;
-		//dprintf(log, "comm: socket: %s\n", strerror(errno));
-		//exit(1);
 	}
 	remote.sun_family = AF_UNIX;
 	sprintf(remote.sun_path, "%s-%d", prefix, getppid());
 	l = strlen(remote.sun_path) + sizeof(remote.sun_family);
 	if (connect(fd, (struct sockaddr *)&remote, l) == -1) {
+		dprintf(log, "comm: connect: %s\n", strerror(errno));
 		return 0;
-		//dprintf(log, "comm: connect: %s\n", strerror(errno));
-		//exit(1);
 	}
 
 	return fd;
@@ -141,8 +168,7 @@ setup(void)
 {
 	log = comm(SOCK_SEQPACKET, "log");
 	sock = comm(SOCK_STREAM, "data");
-	if (!sock)
-		return;
+	stack = comm(SOCK_STREAM, "stacktrace");
 	signals();
 	timers();
 	instenter = push;

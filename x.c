@@ -40,9 +40,11 @@ busy(void *p)
 void *
 idle(void *p)
 {
-	long end = now() + 5 * BILLION;
+	long end = now() + 4 * BILLION;
 	while (now() < end)
 		;
+	int *n;
+	*n = 42;
 }
 
 int

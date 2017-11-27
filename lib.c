@@ -11,6 +11,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* macros */
+#define len(x) (sizeof(x)/sizeof(x[0]))
+
 /* types */
 /* Type F represents a stack frame holding function address and callsite. */
 typedef struct {
@@ -130,6 +133,7 @@ newN(F f)
 	n->f = f;
 	n->ncall = n->nsamp = n->cap = n->len = 0;
 	n->callee = NULL;
+	n->parent = NULL;
 	n->llist = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
 	n->lsamp = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
 	n->lcall = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
@@ -340,4 +344,23 @@ sane(N *n)
 	}
 	mcheck(pthread_mutex_unlock, &n->lsamp);
 	return ok;
+}
+
+static int
+marshals(B *b, N *sp, int sig)
+{
+	append(b,
+	"{"
+		"\"signal\":%d,"
+		"\"stacktrace\":[", sig);
+	for (N *n = sp; n; n = n->parent) {
+		append(b,
+		"{"
+			"\"fn\":%ld,"
+			"\"cs\":%ld"
+		"},", n->f.fn, n->f.cs);
+	}
+	if (',' == b->buf[b->len - 1])
+		--b->len; /* overwrite trailing comma */
+	append(b, "]}");
 }

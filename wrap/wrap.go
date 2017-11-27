@@ -53,6 +53,24 @@ func checksum(path string) string {
 	return sum
 }
 
+type frame struct {
+	Fn uint64 `json:"fn,omitempty"`
+	Cs uint64 `json:"cs,omitempty"`
+}
+
+type sig syscall.Signal
+
+func (s sig) String() string {
+	return syscall.Signal(s).String()
+}
+
+func (s sig) Signal() {}
+
+// MarshalText allows a sig to be represented as a string in JSON objects.
+func (s sig) MarshalText() ([]byte, error) {
+	return []byte(s.String()), nil
+}
+
 // System contains data pertaining to overall system metrics
 type System struct {
 	CPUPercent float64 `json:"cpu_percent"`
@@ -67,7 +85,8 @@ type Event struct {
 	UUID          string    `json:"uuid"`
 	Time          time.Time `json:"timestamp"`
 	Status        int       `json:"exit_status"`
-	Signal        string    `json:"signal,omitempty"`
+	Signal        sig       `json:"signal,omitempty"`
+	Trace         []frame   `json:"stacktrace,omitempty"`
 	SystemMetrics System    `json:"system_metrics"`
 }
 
@@ -80,13 +99,9 @@ func (e *Event) brand() {
 	e.CheckSum = cksum
 }
 
-func event(state *os.ProcessState) *Event {
-	ws, ok := state.Sys().(syscall.WaitStatus)
-	if !ok {
-		log.Print("expected type syscall.WaitStatus; non-POSIX system?")
-		return nil
-	}
+var inboundPrev, outboundPrev uint64
 
+func metrics() System {
 	var (
 		inbound    uint64
 		outbound   uint64
@@ -112,24 +127,37 @@ func event(state *os.ProcessState) *Event {
 		outbound = tempNet[0].BytesSent
 	}
 
-	s := System{
+	return System{
 		CPUPercent: cpuPercent,
 		MemPercent: memPercent,
 		Inbound:    inbound,
 		Outbound:   outbound,
 	}
+}
 
-	return &Event{
-		Time:   time.Now(),
-		Status: ws.ExitStatus(),
-		Signal: func() string {
-			if ws.Signaled() {
-				return ws.Signal().String()
-			}
-			return ""
-		}(),
-		SystemMetrics: s,
+func event(evt chan Event, state *os.ProcessState) *Event {
+	ws, ok := state.Sys().(syscall.WaitStatus)
+	if !ok {
+		log.Print("expected type syscall.WaitStatus; non-POSIX system?")
+		return nil
 	}
+
+	e := Event{
+		Time:          time.Now(),
+		Status:        ws.ExitStatus(),
+		SystemMetrics: metrics(),
+	}
+
+	if ws.Signaled() {
+		e.Signal = sig(ws.Signal())
+	}
+
+	if x, ok := <-evt; ok {
+		log.Print("event: got stacktrace")
+		e.Signal = x.Signal
+		e.Trace = x.Trace
+	}
+	return &e
 }
 
 func check(err error) {
@@ -142,9 +170,7 @@ func usage() {
 	log.Fatalf("usage: %v command [args ...]\n", os.Args[0])
 }
 
-var inboundPrev, outboundPrev uint64
-
-func run(obj chan Object, cmd *exec.Cmd) {
+func run(obj chan Object, evt chan Event, cmd *exec.Cmd) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
@@ -161,7 +187,7 @@ func run(obj chan Object, cmd *exec.Cmd) {
 
 	go func() {
 		cmd.Wait()
-		obj <- event(cmd.ProcessState)
+		obj <- event(evt, cmd.ProcessState)
 		done <- struct{}{}
 	}()
 
@@ -181,8 +207,7 @@ func run(obj chan Object, cmd *exec.Cmd) {
 type Node struct {
 	CheckSum string `json:"checksum,omitempty"`
 	UUID     string `json:"uuid,omitempty"`
-	Fn       uint64 `json:"fn,omitempty"`
-	Cs       uint64 `json:"cs,omitempty"`
+	frame
 	Ncalls   uint   `json:"ncalls,omitempty"`
 	Nsamples uint   `json:"nsamples,omitempty"`
 	Callees  []Node `json:"callees,omitempty"`
@@ -223,6 +248,50 @@ func logs(logger io.Writer) (func(), error) {
 		}
 		log.Print("closing logs socket")
 		l.Close()
+	}, nil
+}
+
+func stacktrace(evt chan Event) (func(), error) {
+	s, err := net.Listen("unix", "stacktrace-"+strconv.Itoa(os.Getpid()))
+	if err != nil {
+		return func() {}, err
+	}
+	log.Print("stacktrace socket opened")
+
+	done := make(chan error)
+
+	go func() {
+		c, err := s.Accept()
+		if err != nil {
+			done <- err
+			return
+		}
+		log.Print("stacktrace connection accepted")
+		line := bufio.NewScanner(c)
+
+		// quits on EOF
+		for line.Scan() {
+			var s Event
+			err := json.Unmarshal(line.Bytes(), &s)
+			if err != nil {
+				close(evt)
+				done <- err
+				return
+			}
+			evt <- s
+		}
+		close(evt)
+		log.Print("stacktrace socket EOF")
+		done <- nil
+	}()
+
+	return func() {
+		// wait for socket relay to finish
+		if err := <-done; err != nil {
+			log.Print(err)
+		}
+		log.Print("closing stacktrace socket")
+		s.Close()
 	}, nil
 }
 
@@ -415,6 +484,7 @@ func main() {
 	}
 
 	obj := make(chan Object)
+	evt := make(chan Event)
 
 	wprod, err := produce(obj)
 	check(err)
@@ -424,10 +494,14 @@ func main() {
 	check(err)
 	defer wrelay()
 
+	wstack, err := stacktrace(evt)
+	check(err)
+	defer wstack()
+
 	lc, err := logs(logger)
 	check(err)
 	defer lc()
 
-	run(obj, cmd)
+	run(obj, evt, cmd)
 	close(obj)
 }

@@ -7,4 +7,4 @@ services:
       dockerfile: ./compose/auklet/Dockerfile
     env_file: .env
     volumes:
-      - .:/go/src/github.com/user/myProject/app
+      - .:/app

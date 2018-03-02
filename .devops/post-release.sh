@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+THIS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # Get the version and drop all build metadata from it.
 VERSION=$(cat ~/.version | xargs | cut -f1 -d"+")
 # Revert to a pristine checkout.
@@ -30,12 +31,12 @@ git tag -a $VERSION -m "$VERSION"
 git push origin $VERSION
 TAG_SHA=$(git show-ref -s $VERSION | xargs) # This is NOT the same as the SHA-1 of the commit to which the tag points. Remember that the tag created above is annotated, not lightweight.
 # Wait until the GitHub API recognizes the new tag.
-# This ensures that GCG will see it.
+# This ensures that the changelog generator will see it.
 echo
 echo 'Waiting for new tag to appear in GitHub API...'
 TAG_RESULT=''
 while [ ! "$TAG_RESULT" == "$VERSION" ]; do
-  sleep 1
+  sleep 5
   TAG_RESULT=$(curl -s -H "Authorization: Token $CHANGELOG_GITHUB_TOKEN" https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/git/tags/$TAG_SHA | jq -r .tag)
 done
 # Switch to the changelog branch.
@@ -44,22 +45,11 @@ git checkout changelog
 git branch -u origin/changelog changelog
 git pull
 # Generate the changelogs.
-UNRELEASED_LABEL='Upcoming Changes'
-github_changelog_generator --no-verbose --cache-file /tmp/github-changelog-http-cache-$RANDOM --cache-log /tmp/github-changelog-logger-$RANDOM.log --unreleased-label "$UNRELEASED_LABEL" --exclude-tags-regex '\d+\.\d+\.\d+-rc\.\d+' --date-format '%c %Z' --exclude-labels release -o README.md "$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME"
-github_changelog_generator --no-verbose --cache-file /tmp/github-changelog-http-cache-$RANDOM --cache-log /tmp/github-changelog-logger-$RANDOM.log --no-compare-link --date-format '%c %Z' --exclude-labels release -o README-WITH-RC.md "$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME"
-# Modify the HEAD links in the non-RC changelog to point to "master".
-sed -i -E "s/(## \[$UNRELEASED_LABEL\].+)\/HEAD\)/\1\/master)/g" README.md
-sed -i -E 's/(\[Full Changelog\].+\.\.\.)HEAD\)/\1master)/g' README.md
-# Shrink the headers of the RC tags in the RC changelog.
-sed -i -E 's/## \[([[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+-.+)\]/### [\1]/g' README-WITH-RC.md
-# If the topmost tag in the RC changelog is an RC tag, add an "Upcoming Changes" header.
-perl -0777 -i -pe "s:# Change Log\s+### :# Change Log\n\n## $UNRELEASED_LABEL\n### :gsm" README-WITH-RC.md
-# Collapse duplicate blank lines.
-cat -s README.md > README.final
-cat -s README-WITH-RC.md > README-WITH-RC.final
-rm README.md README-WITH-RC.md
-mv README.final README.md
-mv README-WITH-RC.final README-WITH-RC.md
+CURRENT_DIR="$(pwd)"
+cd ~ # Prevents codebase contamination.
+npm install --no-spin bluebird any-promise request-promise-any request semver semver-extra semver-sort parse-link-header > /dev/null 2>&1
+node $THIS_DIR/calculateChangelogs.js "$CURRENT_DIR"
+eval cd $CURRENT_DIR
 # Push the changelog to GitHub.
 echo
 echo 'Updating changelog and pushing to GitHub...'

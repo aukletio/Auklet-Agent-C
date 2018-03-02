@@ -8,13 +8,13 @@ ENVDIR=$1
 VERSION="$(cat VERSION)"
 VERSION_SIMPLE=$(cat VERSION | xargs | cut -f1 -d"+")
 export TIMESTAMP="$(date --rfc-3339=seconds | sed 's/ /T/')"
-export GOFLAGS="-ldflags \"-X main.Version=$VERSION -X main.BuildDate=$TIMESTAMP\""
+GO_LDFLAGS="-X main.Version=$VERSION -X main.BuildDate=$TIMESTAMP"
 
 echo 'Compiling releaser...'
 echo 'OS/Arch: linux/amd64'
-GOOS=linux GOARCH=amd64 go build -o release-$VERSION-linux-amd64 ./release
+GOOS=linux GOARCH=amd64 go build -ldflags "$GO_LDFLAGS" -o release-$VERSION-linux-amd64 ./release
 echo 'OS/Arch: windows/amd64'
-GOOS=windows GOARCH=amd64 go build -o release-$VERSION-windows-amd64.exe ./release
+GOOS=windows GOARCH=amd64 go build -ldflags "$GO_LDFLAGS" -o release-$VERSION-windows-amd64.exe ./release
 echo
 
 echo 'Compiling wrapper/library combinations...'
@@ -25,7 +25,7 @@ do
   echo "OS/Arch: $GOOS/$arch"
   if [[ "$pkg" != "" ]]; then
     echo "Installing $pkg cross compilation toolchain..."
-    apt-get -y install $pkg > /dev/null 2>&1
+    sudo apt-get -y install $pkg > /dev/null 2>&1
     echo "$pkg cross compilation toolchain installed; proceeding with compilation..."
   fi
   if [[ "$arch" == "arm" ]]; then
@@ -33,7 +33,7 @@ do
     export GOARM=7
   fi
   echo 'Compiling wrapper...'
-  GOARCH=$arch go build -o wrap-$VERSION-$GOOS-$arch ./wrap
+  GOARCH=$arch go build -ldflags "$GO_LDFLAGS" -o wrap-$VERSION-$GOOS-$arch ./wrap
   echo 'Compiling library...'
   CC=$cc AR=$ar TARNAME="libauklet-$VERSION-$GOOS-$arch.tgz" ./bt libpkg
   echo "DONE: $GOOS/$arch"
@@ -41,7 +41,7 @@ do
 done < compile-combos.csv
 
 echo 'Installing AWS CLI...'
-apt-get -y install awscli > /dev/null 2>&1
+sudo apt-get -y install awscli > /dev/null 2>&1
 
 if [[ "$ENVDIR" == "production" ]]; then
   echo 'Erasing production profiler components in public S3...'

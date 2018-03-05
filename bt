@@ -11,9 +11,7 @@ function cleanLibauklet () {
   rm -f rt.o libauklet.a libauklet.tgz
 }
 function rtCompile () {
-case "$1" in
   ${CC} -o rt.o -c ${CFLAGS} -DAUKLET_VERSION="\"$(cat VERSION)\"" -DAUKLET_TIMESTAMP="\"${TIMESTAMP}\"" rt.c
-  clean)
 }
 case "$1" in
   clean)

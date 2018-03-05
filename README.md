@@ -21,7 +21,7 @@ To build the agent and run unit tests, run
 
 To build the manual testing executables `x`, `x-raw` and `x-dbg`, run
 
-		./bt x
+	./bt x
 
 To compile and install the agent static library `libauklet.a` to `/usr/local/lib/`, run
 

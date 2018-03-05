@@ -19,7 +19,11 @@ To build the agent and run unit tests, run
 
 	./bt test
 
-To compile and install the static library `libauklet.a` to `/usr/local/lib/`, run
+To build the manual testing executables `x`, `x-raw` and `x-dbg`, run
+
+		./bt x
+
+To compile and install the agent static library `libauklet.a` to `/usr/local/lib/`, run
 
 	./bt libinstall
 
@@ -28,4 +32,4 @@ To compile and install the static library `libauklet.a` to `/usr/local/lib/`, ru
 1. Install Docker for Mac Beta.
 1. Build your environment with `docker-compose build`.
 1. To build the agent and run unit tests, run `docker-compose run auklet ./bt test`.
-1. To compile and install the static library `libauklet.a` to `/usr/local/lib`, run `docker-compose run auklet ./bt libinstall`.
+1. To compile and install the agent static library `libauklet.a` to `/usr/local/lib`, run `docker-compose run auklet ./bt libinstall`.

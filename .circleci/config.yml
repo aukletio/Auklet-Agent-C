@@ -4,7 +4,7 @@ jobs:
     build:
         environment:
             TZ: "/usr/share/zoneinfo/America/Detroit"
-        working_directory: ~/go/src/github.com/ESG-USA/Auklet-Profiler-C
+        working_directory: ~/app
         docker:
             # Ubuntu provides the easiest cross-compilation
             # environment for libauklet.a, but all CircleCI
@@ -31,17 +31,9 @@ jobs:
                 command: |
                   echo 'Installing NodeJS...'
                   curl -sL https://deb.nodesource.com/setup_8.x | sudo bash - > /dev/null
-                  sudo apt-get -y install nodejs > /dev/null 2>&1
+                  sudo apt -y install nodejs > /dev/null 2>&1
                   echo 'Installing C compilation requirements...'
-                  sudo apt-get -y install software-properties-common build-essential > /dev/null 2>&1
-                  echo 'Installing Go...'
-                  curl -sSL https://redirector.gvt1.com/edgedl/go/go1.8.5.linux-amd64.tar.gz | tar xzf -
-                  sudo mv go /usr/local
-                  sudo chown -R root:root /usr/local/go
-                  sudo curl -sSL https://github.com/golang/dep/releases/download/v0.3.2/dep-linux-amd64 -o /usr/local/go/bin/dep
-                  sudo chmod +x /usr/local/go/bin/dep
-                  echo 'export GOPATH=$(cd ; pwd)/go' >> $BASH_ENV
-                  echo 'export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin' >> $BASH_ENV
+                  sudo apt -y install software-properties-common build-essential > /dev/null 2>&1
             - run:
                 name: Validate PR
                 command: |
@@ -61,30 +53,12 @@ jobs:
                   cp ~/.version VERSION
 
             ##
-            # RESTORE CACHES
-            ##
-            - restore_cache:
-                key: v3-dependency-cache-{{ checksum "Gopkg.lock" }}-{{ checksum "Gopkg.toml" }}
-
-            ##
             # TESTS
             ##
-            - run:
-                name: Download Go dependencies
-                command: |
-                  dep ensure -v
             - run:
                 name: Run tests
                 command: |
                   ./bt test
-
-            ##
-            # SAVE CACHES
-            ##
-            - save_cache:
-                key: v3-dependency-cache-{{ checksum "Gopkg.lock" }}-{{ checksum "Gopkg.toml" }}
-                paths:
-                    - /home/circleci/go/pkg/dep/sources
 
             ##
             # DEPLOYMENT

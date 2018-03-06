@@ -8,7 +8,7 @@ has been validated on:
 # Development Tools
 
 `autobuild` is an optional script that can be run in a separate terminal window.
-When source files change, it runs `./bt`, allowing the developer to find
+When source files change, it runs `./bt test ; ./bt lib`, allowing the developer to find
 compile-time errors immediately without needing an IDE.
 
 `autobuild` requires [entr](http://www.entrproject.org/).

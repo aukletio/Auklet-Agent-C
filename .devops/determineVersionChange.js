@@ -17,8 +17,8 @@ const org = process.env.CIRCLE_PROJECT_USERNAME;
 const repo = process.env.CIRCLE_PROJECT_REPONAME;
 const branch = process.env.CIRCLE_BRANCH;
 const baseVersion = process.argv[2];
-const prNumber = process.argv[3];
-const headSha = process.argv[4];
+const headSha = process.argv[3];
+const prNumber = process.argv[4];
 console.log('Calculating next version based on closed issues/PRs since the last production release...');
 
 // 1. Get the commit hash for the tag.

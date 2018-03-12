@@ -107,7 +107,8 @@ sigprof(int n)
 static void
 sigemit(int n)
 {
-	logprint(DEBUG, "sigemit(%d)", n);
+	//logprint(DEBUG, "sigemit(%d)", n);
+	dumpN(DEBUG, &root, 0);
 	settimers();
 	sem_post(&sem);
 }

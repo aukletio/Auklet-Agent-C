@@ -173,15 +173,20 @@ newN(F f)
 static void
 dumpN(int level, N *n, unsigned ind)
 {
-	char tab[] = "\t\t\t\t\t\t\t\t\t\t";
+	char tab[] = "          ";
 	tab[ind] = '\0';
-	logprint(level, "%s%p:", tab, (void *)n);
-	logprint(level, "%s    f.fn = %p", tab, (void *)n->f.fn);
-	logprint(level, "%s    f.cs = %p", tab, (void *)n->f.cs);
-	logprint(level, "%s    nsamp = %u", tab, n->nsamp);
-	logprint(level, "%s    ncall = %u", tab, n->ncall);
-	logprint(level, "%s    len/cap = %u/%u", tab, n->len, n->cap);
-	logprint(level, "%s    callee = %p", tab, (void *)n->callee);
+	logprint(level, "%s%p: fn:%p cs:%p empty:%d nsamp:%u ncall:%u len/cap:%u/%u callee:%p",
+		tab,
+		(void *)n,
+		(void *)n->f.fn,
+		(void *)n->f.cs,
+		n->empty,
+		n->nsamp,
+		n->ncall,
+		n->len,
+		n->cap,
+		n->callee
+	);
 	for (int i = 0; i < n->len; ++i)
 		dumpN(level, n->callee[i], ind + 1);
 }

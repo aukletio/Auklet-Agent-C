@@ -36,6 +36,7 @@ github.get({
       uri: `repos/${org}/${repo}/commits?per_page=100&sha=${tagSha}`
     }).then(function(tagCommits) {
       // 3. Get the entire commit history for HEAD.
+      console.log(`Head SHA: ${headSha}`);
       console.log('Finding all commits in HEAD...');
       getPaginated({
         uri: `repos/${org}/${repo}/commits?per_page=100&sha=${headSha}`

@@ -18,10 +18,11 @@ const repo = process.env.CIRCLE_PROJECT_REPONAME;
 const branch = process.env.CIRCLE_BRANCH;
 const baseVersion = process.argv[2];
 const prNumber = process.argv[3];
+const headSha = process.argv[4];
 console.log('Calculating next version based on closed issues/PRs since the last production release...');
 
 // 1. Get the commit hash for the tag.
-console.log('Looking up this tag\'s hash...');
+console.log('Looking up the target production tag\'s hash...');
 github.get({
   uri: `/repos/${org}/${repo}/commits/${baseVersion}`,
 }).then(function(response) {
@@ -29,19 +30,25 @@ github.get({
   if (response.statusCode === 200) {
     var tagSha = response.body.sha;
     console.log(`Tag SHA: ${tagSha}`);
-    console.log('Finding all commits in this tag...');
+    console.log('Finding all commits in the target tag...');
     // 2. Get the entire commit history for the tag.
     getPaginated({
       uri: `repos/${org}/${repo}/commits?per_page=100&sha=${tagSha}`
     }).then(function(tagCommits) {
-      // 3. Get all closed PRs in this repo.
-      console.log('Getting all closed PRs in this repo...');
+      // 3. Get the entire commit history for HEAD.
+      console.log('Finding all commits in HEAD...');
       getPaginated({
-        uri: `/repos/${org}/${repo}/pulls?per_page=100&state=closed&sort=updated`
-      }).then(function(closedPrs) {
-        // 4. Compare the list of closed PRs to the list of tag commits
-        // and figure out what kinds of unmerged changes there are.
-        cleanseResults(tagCommits, closedPrs);
+        uri: `repos/${org}/${repo}/commits?per_page=100&sha=${headSha}`
+      }).then(function(headCommits) {
+        // 4. Get all closed PRs in this repo.
+        console.log('Getting all closed PRs in this repo...');
+        getPaginated({
+          uri: `/repos/${org}/${repo}/pulls?per_page=100&state=closed&sort=updated`
+        }).then(function(closedPrs) {
+          // 5. Compare the list of closed PRs to the list of tag commits
+          // and figure out what kinds of unmerged changes there are.
+          cleanseResults(tagCommits, headCommits, closedPrs);
+        }).catch(handleError);
       }).catch(handleError);
     }).catch(handleError);
   } else {
@@ -49,16 +56,17 @@ github.get({
   }
 }).catch(handleError);
 
-function cleanseResults(tagCommits, closedPrs) {
-  // Transform the array so we only have the commit hashes.
-  console.log('Parsing list of commits in this tag...');
+function cleanseResults(tagCommits, headCommits, closedPrs) {
+  // Transform the arrays so we only have the commit hashes.
+  console.log('Parsing list of commits in the target tag and in HEAD...');
   var tagShas = tagCommits.map(function(commit) { return commit.sha; });
+  var headShas = headCommits.map(function(commit) { return commit.sha; });
   // Not all closed PRs are merged. We only want merged PRs.
   // Also, skip all release PRs.
-  console.log('Selecting all merged non-release PRs that are not included in this tag...');
+  console.log('Selecting non-release PRs that have been merged into HEAD but not into the target tag...');
   var eligiblePrs = closedPrs.filter(function(pr) {
     var labels = pr.labels.map(function(label) { return label.name; });
-    return pr.merged_at !== null && !labels.includes('release');
+    return pr.merged_at !== null && !labels.includes('release') && headShas.includes(pr.merge_commit_sha);
   });
   // If this is a PR, add it to the list of eligible PRs.
   if (prNumber) {

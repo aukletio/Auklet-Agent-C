@@ -43,8 +43,8 @@ typedef struct n {
 	pthread_mutex_t lcall;
 	unsigned ncall;
 
-	/* A node is empty if nsamp == ncall == 0 for itself and all of its
-	 * children. */
+	/* A node is empty iff its counters are zero
+	 * and each of its callees are empty. */
 	int empty;
 } N;
 
@@ -70,12 +70,15 @@ static void killN(N *n, int root);
 static N *hascallee(N *n, F f);
 static N *addcallee(N *n, F f);
 static void sample(N *sp);
-static void setnotempty(N *n);
 
 static void growB(B *b);
 static int append(B *b, char *fmt, ...);
 
+static void marshalN(B *b, N *n);
 static void marshal(B *b, N *n);
+static void removetrailingcomma(B *b);
+static int markempty(N *n);
+static int markemptycallees(N *n);
 static void marshals(B *b, N *sp, int sig);
 static int logprint(int level, char *fmt, ...);
 
@@ -127,7 +130,6 @@ push(N **sp, F f)
 	++c->ncall;
 	pthread_mutex_unlock(&c->lcall);
 	*sp = c;
-	setnotempty(*sp);
 	return 1;
 }
 
@@ -288,24 +290,17 @@ retry:
 	return wc;
 }
 
-static void
-setnotempty(N *n)
-{
-	n->empty = 0;
-	if (n->parent && n->parent->empty)
-		setnotempty(n->parent);
-}
-
 /* Marshal the given tree n to JSON. The caller is required to first
  * call setjmp(nomem) to catch memory allocation errors. */
 static void
-marshal(B *b, N *n)
+marshalN(B *b, N *n)
 {
-	append(b, "{");
+	if (n->empty)
+		return;
 
+	append(b, "{");
 	if (n->f.fn)
 		append(b, "\"fn\":%ld,", (unsigned long)n->f.fn);
-
 	if (n->f.cs)
 		append(b, "\"cs\":%ld,", (unsigned long)n->f.cs);
 
@@ -319,33 +314,69 @@ marshal(B *b, N *n)
 		append(b, "\"nsamples\":%u,", n->nsamp);
 	pthread_mutex_unlock(&n->lsamp);
 
-	/* It's convenient, but hacky, to clear the counters here while we're
-	 * walking the tree. All counters are cleared after a tree is emitted,
-	 * so that the next tree begins at zero.  We also set the empty flag
-	 * so that future calls to marshal can skip empty branches. */
-	n->ncall = 0;
-	n->nsamp = 0;
-	n->empty = 1;
-
 	pthread_mutex_lock(&n->llist);
-	if (n->len) {
-		append(b, "\"callees\":[");
-		for (int i = 0; i < n->len; ++i) {
-			if (n->callee[i]->empty)
-				continue;
-			marshal(b, n->callee[i]);
-			append(b, ",");
-		}
-		if (',' == b->buf[b->len - 1])
-			b->len -= 1;
-		append(b, "]");
-	} else {
-		if (',' == b->buf[b->len - 1])
-			b->len -= 1;
-	}
-	pthread_mutex_unlock(&n->llist);
+	append(b, "\"callees\":[");
+	for (int i = 0; i < n->len; ++i)
+		marshalN(b, n->callee[i]);
 
-	append(b, "}");
+	removetrailingcomma(b);
+
+	append(b, "]");
+	pthread_mutex_unlock(&n->llist);
+	append(b, "},");
+}
+
+static void
+marshal(B *b, N *n)
+{
+	markempty(n);
+	marshalN(b, n);
+	removetrailingcomma(b);
+}
+
+static void
+removetrailingcomma(B *b)
+{
+	if (!b->buf)
+		return;
+	if (',' == b->buf[b->len - 1]) {
+		b->len -= 1;
+		b->buf[b->len] = '\0';
+	}
+}
+
+/* markempty determines if n is empty and sets n->empty accordingly. It also
+ * returns this value. */
+static int
+markempty(N *n)
+{
+	/* markemptycallees must be called first because it must be run
+	 * unconditionally. Otherwise short-circuiting will terminate the
+	 * statement early and the callees won't get marked. */
+	n->empty = markemptycallees(n) && !n->ncall && !n->nsamp;
+	return n->empty;
+}
+
+/* Return whether n's callees are empty. */
+static int
+markemptycallees(N *n)
+{
+	/* Assume empty, initially. This ensures that if n->len == 0, we count
+	 * that as n's callees being empty. */
+	int empty = 1;
+	for (int i = 0; i < n->len; ++i)
+		if (!markempty(n->callee[i]))
+			empty = 0;
+	return empty;
+}
+
+static void
+clearcounters(N *n)
+{
+	n->nsamp = 0;
+	n->ncall = 0;
+	for (int i = 0; i < n->len; ++i)
+		clearcounters(n->callee[i]);
 }
 
 /* Return whether the given tree satisfies the property that each parent node's

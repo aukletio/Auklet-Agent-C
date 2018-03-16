@@ -1,0 +1,121 @@
+#include <stdint.h>
+#include <pthread.h>
+
+#include "node.h"
+
+#include <stdlib.h>
+
+static int equal(Frame *a, Frame *b);
+static Node *get(Node *n, Frame *f);
+static Node *add(Node *n, Frame *f);
+static Node *getoradd(Node *n, Frame *f);
+static int grow(Node *n);
+
+/* exported functions */
+
+Node *
+newNode(Frame *f, Node *parent)
+{
+	Node *n = malloc(sizeof(Node));
+	if (!n)
+		return NULL;
+	*n = emptyNode;
+	n->f = *f;
+	n->parent = parent;
+	return n;
+}
+
+void
+freeNode(Node *n, int root)
+{
+	for (int i = 0; i < n->len; ++i)
+		freeNode(n->callee[i], 0);
+	free(n->callee);
+	if (!root)
+		free(n);
+}
+
+Node *
+push(Node *sp, Frame *f)
+{
+	Node *c = getoradd(sp, f);
+	if (!c)
+		return NULL;
+	pthread_mutex_lock(&c->lcall);
+	++c->ncall;
+	pthread_mutex_unlock(&c->lcall);
+	return c;
+}
+
+Node *
+pop(Node *sp)
+{
+	if (!sp->parent)
+		return NULL;
+	return sp->parent;
+}
+
+void
+sample(Node *sp)
+{
+	for (Node *n = sp; n; n = n->parent) {
+		pthread_mutex_lock(&n->lsamp);
+		++n->nsamp;
+		pthread_mutex_unlock(&n->lsamp);
+	}
+}
+
+/* private functions */
+
+int
+equal(Frame *a, Frame *b)
+{
+	return ((a->fn == b->fn) && (a->cs == b->cs));
+}
+
+Node *
+get(Node *n, Frame *f)
+{
+	for (int i = 0; i < n->len; ++i)
+		if (equal(&n->callee[i]->f, f))
+			return n->callee[i];
+	return NULL;
+}
+
+Node *
+add(Node *n, Frame *f)
+{
+	if (grow(n))
+		return NULL;
+	Node *new = newNode(f, n);
+	if (!new)
+		return NULL;
+	++n->len;
+	n->callee[n->len - 1] = new;
+	return new;
+}
+
+Node *
+getoradd(Node *n, Frame *f)
+{
+	pthread_mutex_lock(&n->llist);
+	Node *c = get(n, f);
+	if (!c)
+		c = add(n, f);
+	pthread_mutex_unlock(&n->llist);
+	return c;
+}
+
+int
+grow(Node *n)
+{
+	if (n->len < n->cap)
+		return 0;
+	unsigned cap = n->cap ? 2 * n->cap : 1;
+	Node **callee = realloc(n->callee, cap*sizeof(Node *));
+	if (!callee)
+		return -1;
+	n->callee = callee;
+	n->cap = cap;
+	return 0;
+}

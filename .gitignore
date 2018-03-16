@@ -83,14 +83,6 @@ com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 
-#####=== CMake ===#####
-
-CMakeCache.txt
-CMakeFiles
-Makefile
-cmake_install.cmake
-install_manifest.txt
-
 #####=== Auklet ===#####
 auklet.conf
 lib_test

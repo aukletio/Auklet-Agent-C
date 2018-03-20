@@ -1,3 +1,5 @@
+/* Module buf implements a simple, resizable text buffer. */
+
 typedef struct {
 	char *buf;
 	unsigned cap, len;

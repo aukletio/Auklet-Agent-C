@@ -19,7 +19,7 @@ newNode(Frame *f, Node *parent)
 	Node *n = malloc(sizeof(Node));
 	if (!n)
 		return NULL;
-	*n = emptyNode;
+	*n = (Node)emptyNode;
 	n->f = *f;
 	n->parent = parent;
 	return n;
@@ -35,24 +35,26 @@ freeNode(Node *n, int root)
 		free(n);
 }
 
-Node *
-push(Node *sp, Frame *f)
+int
+push(Node **sp, Frame *f)
 {
-	Node *c = getoradd(sp, f);
+	Node *c = getoradd(*sp, f);
 	if (!c)
-		return NULL;
+		return 0;
 	pthread_mutex_lock(&c->lcall);
 	++c->ncall;
 	pthread_mutex_unlock(&c->lcall);
-	return c;
+	*sp = c;
+	return 1;
 }
 
-Node *
-pop(Node *sp)
+int
+pop(Node **sp)
 {
-	if (!sp->parent)
-		return NULL;
-	return sp->parent;
+	if (!(*sp)->parent)
+		return 0;
+	*sp = (*sp)->parent;
+	return 1;
 }
 
 void
@@ -118,4 +120,13 @@ grow(Node *n)
 	n->callee = callee;
 	n->cap = cap;
 	return 0;
+}
+
+void
+clearcounters(Node *n)
+{
+	n->nsamp = 0;
+	n->ncall = 0;
+	for (int i = 0; i < n->len; ++i)
+		clearcounters(n->callee[i]);
 }

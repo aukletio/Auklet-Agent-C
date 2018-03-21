@@ -1,5 +1,12 @@
+#include <stdint.h>
+#include <pthread.h>
+
+#include "node.h"
+
 #include "socket.h"
+
 #include "buf.h"
+#include "json.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -23,19 +30,19 @@ int
 connecttoclient()
 {
 	struct sockaddr_un remote;
-	int l;
-	if ((sockfd = socket(AF_UNIX, SOCK_SEQPACKET, 0)) == -1)
+	int l, fd;
+	if ((fd = socket(AF_UNIX, SOCK_SEQPACKET, 0)) == -1)
 		return 0;
 	remote.sun_family = AF_UNIX;
 	sprintf(remote.sun_path, "/tmp/auklet-%d", getppid());
 	l = strlen(remote.sun_path) + sizeof(remote.sun_family);
-	if (connect(sockfd, (struct sockaddr *)&remote, l) == -1)
+	if (connect(fd, (struct sockaddr *)&remote, l) == -1)
 		return 0;
-	return 1;
+	return fd;
 }
 
 int
-logprint(int level, char *fmt, ...)
+logprint(int fd, int level, char *fmt, ...)
 {
 	Buf b = emptyBuf;
 	int ret;
@@ -47,8 +54,31 @@ logprint(int level, char *fmt, ...)
 			"\"message\":\"%s\""
 		"}}\n", loglevel[level], fmt);
 	va_start(ap, fmt);
-	ret = vdprintf(sockfd, b.buf, ap);
+	ret = vdprintf(fd, b.buf, ap);
 	va_end(ap);
 	free(b.buf);
 	return ret;
+}
+
+void
+sendstacktrace(int fd, Node *sp, int sig)
+{
+	Buf b = emptyBuf;
+	append(&b, "{\"type\":\"event\",\"data\":");
+	marshalstack(&b, sp, sig);
+	append(&b, "}\n");
+	write(fd, b.buf, b.len);
+	free(b.buf);
+}
+
+void
+sendprofile(int fd, Node *root)
+{
+	Buf b = emptyBuf;
+	append(&b, "{\"type\":\"profile\",\"data\":{\"tree\":");
+	marshaltree(&b, root);
+	clearcounters(root);
+	append(&b, "}}\n");
+	write(fd, b.buf, b.len);
+	free(b.buf);
 }

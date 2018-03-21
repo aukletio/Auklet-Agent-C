@@ -1,7 +1,5 @@
 /* Module agent implements an Auklet agent for C or C++ programs. */
 
-#include "emit.h"
-
 #include <pthread.h>
 #include <stdint.h>
 #include "node.h"
@@ -11,14 +9,13 @@
 #include <unistd.h>
 #include <signal.h>
 
+#include "timer.h"
 #include "buf.h"
 #include "json.h"
 
 #include <stdlib.h>
 
 static void __attribute__ ((constructor (101))) setup();
-static void emitprofile();
-static void emitstacktrace();
 static void sigprof(int n);
 static void sigerr(int n);
 
@@ -36,8 +33,8 @@ static Node root = emptyNode;
  * instance initialized to &root for every thread launched. */
 static __thread Node *sp = &root;
 
-/* sock is the file descriptor for the connection to the Auklet client. */
-static int sock;
+/* sockfd is the file descriptor for the connection to the Auklet client. */
+static int sockfd = 0;
 
 /* exported functions */
 
@@ -65,42 +62,25 @@ sigprof(int n)
 void
 sigerr(int n)
 {
-	emitstacktrace(n);
+	sendstacktrace(sockfd, sp, n);
 	_exit(1);
 }
 
 void
-emitstacktrace(int sig)
+profilefunc()
 {
-	Buf b = emptyBuf;
-	append(&b, "{\"type\":\"event\",\"data\":");
-	marshalstack(&b, sp, sig);
-	append(&b, "}\n");
-	write(sockfd, b.buf, b.len);
-	free(b.buf);
-}
-
-void
-emitprofile()
-{
-	Buf b = emptyBuf;
-	append(&b, "{\"type\":\"profile\",\"data\":{\"tree\":");
-	marshaltree(&b, &root);
-	clearcounters(&root);
-	write(sockfd, b.buf, b.len);
-	free(b.buf);
+	sendprofile(sockfd, &root);
 }
 
 /* setup runs before main and initializes the agent. */
 void
 setup()
 {
-	sock = connecttoclient();
-	logprint(INFO, "Auklet Instrument version %s (%s)", AUKLET_VERSION, AUKLET_TIMESTAMP);
+	sockfd = connecttoclient();
+	logprint(sockfd, INFO, "Auklet Instrument version %s (%s)", AUKLET_VERSION, AUKLET_TIMESTAMP);
 	siginstall(SIGPROF, sigprof);
 	siginstall(SIGSEGV, sigerr);
 	siginstall(SIGILL, sigerr);
 	siginstall(SIGFPE, sigerr);
-	emitfunc = emitprofile;
-	startemitter();
+	starttimer(profilefunc);
 }

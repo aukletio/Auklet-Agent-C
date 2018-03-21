@@ -1,4 +1,5 @@
-#include "emit.h"
+#include <unistd.h>
+#include "timer.h"
 
 #include <pthread.h>
 #include <semaphore.h>
@@ -13,21 +14,21 @@ enum {
 	VIRT,
 };
 
-static void sigemit(int n);
+static void sigtimer(int n);
 static void settimers();
 static void maketimers();
-static void *emissionthread(void *p);
+static void *functhread(void *p);
 
 /* global variables */
 
 static sem_t sem;
 
-/* tmr defines two single-shot timers which trigger the emission of a profile
- * tree. We use two timers, one with a CPU clock, one with a realtime clock, so
- * that there is a maximum realtime interval between emissions (for programs
+/* tmr defines two single-shot timers which trigger the execution of timerfunc.
+ * We use two timers, one with a CPU clock, one with a realtime clock, so that
+ * there is a maximum realtime interval between calls to timerfunc (for programs
  * that take little CPU time). The timers are reset in their corresponding
- * signal handlers, which leads to signals being delivered with indefinite
- * repetition. */
+ * signal handlers, so that signals end up being delivered periodically (with a
+ * variable period). */
 static struct {
 	clockid_t clk;
 	struct timespec value;
@@ -38,18 +39,21 @@ static struct {
 	[VIRT] = {CLOCK_PROCESS_CPUTIME_ID, {.tv_sec =  1, .tv_nsec = 0}},
 };
 
+static void (*timerfunc)() = NULL;
+
 /* exported functions */
 
 void
-startemitter()
+starttimer(void (*func)())
 {
 	pthread_t t;
+	timerfunc = func;
 	maketimers();
 	settimers();
 	sem_init(&sem, 0, 0);
-	siginstall(SIGRT(REAL), sigemit);
-	siginstall(SIGRT(VIRT), sigemit);
-	pthread_create(&t, NULL, emissionthread, NULL);
+	siginstall(SIGRT(REAL), sigtimer);
+	siginstall(SIGRT(VIRT), sigtimer);
+	pthread_create(&t, NULL, functhread, NULL);
 }
 
 /* siginstall installs handler as the signal handler for sig. */
@@ -67,20 +71,20 @@ siginstall(int sig, void (*handler)(int))
 
 /* private functions */
 
-/* sigemit handles the signals delivered upon expiration of the emission timers.
+/* sigtimer handles the signals delivered upon expiration of the timers.
  * Since many POSIX functions (especially mutex functions) are unsafe to call
- * from a signal handler, we use a semaphore to communicate with emissionthread,
- * which safely emits the profile tree. */
+ * from a signal handler, we use a semaphore to communicate with functhread,
+ * where timerfunc can be safely executed. */
 void
-sigemit(int n)
+sigtimer(int n)
 {
 	settimers();
 	sem_post(&sem);
 }
 
-/* emissionthread emits profile data after it acquires the semaphore. */
+/* functhread runs timerfunc after it acquires the semaphore. */
 void *
-emissionthread(void *p)
+functhread(void *p)
 {
 	sigset_t s;
 	sigfillset(&s);
@@ -88,13 +92,13 @@ emissionthread(void *p)
 	pthread_sigmask(SIG_BLOCK, &s, NULL);
 	while (1) {
 		sem_wait(&sem);
-		/* Emit the profile tree. This function can safely use mutexes. */
-		emitfunc();
+		/* This function can safely use mutexes. */
+		timerfunc();
 	}
 	return NULL;
 }
 
-/* settimers sets the emission timers to zero. */
+/* settimers sets the timers to zero. */
 void
 settimers()
 {
@@ -106,7 +110,7 @@ settimers()
 	}
 }
 
-/* maketimers initializes the emission timers. */
+/* maketimers initializes the timers. */
 void
 maketimers()
 {

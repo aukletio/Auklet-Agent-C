@@ -1,7 +1,19 @@
-CFLAGS = -Wall -Werror -std=c99 -pedantic -D_POSIX_C_SOURCE=200809L -g
+include config.mk
 
 SRC = buf.c timer.c json.c node.c socket.c agent.c
 OBJ = $(SRC:.c=.o)
+
+install: libauklet.a
+	sudo cp $< $(INSTALL)/$<
+
+uninstall:
+	sudo rm -f $(INSTALL)/libauklet.a
+
+libauklet.tgz: libauklet.a
+	tar cz -f $(TARNAME) $<
+
+libauklet.a: libauklet.o
+	$(AR) rcs $@ $<
 
 # libauklet.o has no internal interfaces exposed. Only the instrumentation
 # functions are globally visible.
@@ -18,17 +30,17 @@ internal-symbols.txt: libauklet-internal.o
 libauklet-internal.o: $(OBJ)
 	$(LD) -r $^ -o $@
 
-# This rule handles modules buf, node, and timer.
-%.o: %.c %.h
-
-json.o: json.c json.h node.h buf.h
-
-socket.o: socket.c node.h
-
 agent.o: CFLAGS += -DAUKLET_VERSION=\"$$(cat VERSION)\" -DAUKLET_TIMESTAMP=\"${TIMESTAMP}\"
 agent.o: agent.c timer.h node.h socket.h buf.h json.h
 
-clean:
-	rm -f $(OBJ) libauklet-internal.o libauklet.o internal-symbols.txt
+json.o: json.c json.h node.h buf.h
 
-.PHONY: all clean
+socket.o: socket.c socket.h node.h
+
+# This rule handles modules buf, node, and timer.
+%.o: %.c %.h
+
+clean:
+	rm -f $(OBJ) libauklet-internal.o libauklet.o libauklet.a libauklet.tgz internal-symbols.txt
+
+.PHONY: install uninstall clean

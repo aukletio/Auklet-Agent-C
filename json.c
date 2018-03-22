@@ -35,8 +35,7 @@ marshalstack(Buf *b, Node *sp, int sig)
 			"\"cs\":%ld"
 		"},", n->f.fn, n->f.cs);
 	}
-	if (',' == b->buf[b->len - 1])
-		--b->len; /* overwrite trailing comma */
+	removetrailingcomma(b);
 	append(b, "]}");
 }
 

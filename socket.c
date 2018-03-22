@@ -77,8 +77,8 @@ sendprofile(int fd, Node *root)
 	Buf b = emptyBuf;
 	append(&b, "{\"type\":\"profile\",\"data\":{\"tree\":");
 	marshaltree(&b, root);
-	clearcounters(root);
 	append(&b, "}}\n");
-	write(fd, b.buf, b.len);
+	if (-1 != write(fd, b.buf, b.len))
+		clearcounters(root);
 	free(b.buf);
 }

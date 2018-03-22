@@ -56,6 +56,12 @@ starttimer(void (*func)())
 	pthread_create(&t, NULL, functhread, NULL);
 }
 
+void
+stoptimer()
+{
+	timerfunc = NULL;
+}
+
 /* siginstall installs handler as the signal handler for sig. */
 void
 siginstall(int sig, void (*handler)(int))
@@ -93,7 +99,8 @@ functhread(void *p)
 	while (1) {
 		sem_wait(&sem);
 		/* This function can safely use mutexes. */
-		timerfunc();
+		if (timerfunc)
+			timerfunc();
 	}
 	return NULL;
 }

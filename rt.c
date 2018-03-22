@@ -107,7 +107,6 @@ sigprof(int n)
 static void
 sigemit(int n)
 {
-	logprint(DEBUG, "sigemit(%d)", n);
 	settimers();
 	sem_post(&sem);
 }
@@ -118,12 +117,13 @@ emit(void)
 {
 	int err;
 	B b = {0, 0, 0};
-	//dumpN(&root, 0);
+	//dumpN(DEBUG, &root, 0);
 	err = setjmp(nomem);
 	if (err) {
 		setinststate(OFF);
 		return;
 	}
+	markempty(&root);
 	append(&b, "{\"type\":\"profile\",\"data\":{\"tree\":");
 	marshal(&b, &root);
 	append(&b, "}}\n");
@@ -132,6 +132,7 @@ emit(void)
 		setinststate(OFF);
 		return;
 	}
+	clearcounters(&root);
 	free(b.buf);
 }
 

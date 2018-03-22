@@ -27,11 +27,44 @@ callee_test(void)
 }
 
 int
+markempty_test(void)
+{
+	int ret = 1;
+	N *root = newN(z);
+	N *sp = root;
+
+	/* A new node should be empty. */
+	markempty(root);
+	if (!root->empty) {
+		printf("%s: before sampling, expected root empty, got nonempty\n", __func__);
+		ret = 0;
+	}
+
+	/* A sampled node should not be empty. */
+	sample(sp);
+	markempty(root);
+	if (root->empty) {
+		printf("%s: after sampling, expected root nonempty, got empty\n", __func__);
+		ret = 0;
+	}
+
+	push(&sp, f);
+	markempty(root);
+	if (sp->empty) {
+		printf("%s: after sampling, expected sp nonempty, got empty\n", __func__);
+		ret = 0;
+	}
+	if (!ret)
+		dumpN(DEBUG, root, 0);
+	killN(root, 0);
+	return ret;
+}
+
+int
 marshal_test(void)
 {
 	int err;
 	B b = {0, 0, 0};
-	char *e = "{}";
 	int ret = 1;
 	err = setjmp(nomem);
 	if (err) {
@@ -41,8 +74,8 @@ marshal_test(void)
 	}
 	N *root = newN(z);
 	marshal(&b, root);
-	if (strcmp(b.buf, e)) {
-		printf("%s: expected \"%s\", got \"%s\"\n", __func__, e, b.buf);
+	if (b.len) {
+		printf("%s: expected \"\", got \"%s\"\n", __func__, b.buf);
 		ret = 0;
 	}
 end:
@@ -59,7 +92,8 @@ marshal_test2(void)
 	char *e = "{\"callees\":[{"
 		"\"fn\":44269,"
 		"\"cs\":64222,"
-		"\"ncalls\":1"
+		"\"ncalls\":1,"
+		"\"callees\":[]"
 	"}]}";
 	int ret = 1;
 
@@ -145,6 +179,7 @@ main()
 	} test[] = {
 #define TEST(f) {f, str(f)}
 		TEST(callee_test),
+		TEST(markempty_test),
 		TEST(marshal_test),
 		TEST(marshal_test2),
 		TEST(marshals_test),

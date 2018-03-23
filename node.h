@@ -3,7 +3,7 @@
 /* Each node in the tree represents a callframe. The tree encodes the structure
  * of a program in terms of caller-callee relationships, with each node having a
  * list of callees, and a pointer to the parent, the function that called it.
- * Each node also has counters for number of calls CPU time (in units of
+ * Each node also has counters for number of calls and CPU time (in units of
  * samples). */
 
 /* needs stdint.h, pthread.h */

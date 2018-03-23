@@ -5,27 +5,11 @@ has been validated on:
 
 - Ubuntu 16.04
 
-# Development Tools
-
-`autobuild` is an optional script that can be run in a separate terminal window.
-When source files change, it runs `./bt test ; ./bt lib`, allowing the developer to find
-compile-time errors immediately without needing an IDE.
-
-`autobuild` requires [entr](http://www.entrproject.org/).
-
 # Build
 
-To build the agent and run unit tests, run
+To test, build, and install the agent, run
 
-	./bt test
-
-To build the manual testing executables `x`, `x-raw` and `x-dbg`, run
-
-	./bt x
-
-To compile and install the agent static library `libauklet.a` to `/usr/local/lib/`, run
-
-	./bt libinstall
+	make
 
 # Docker Setup
 

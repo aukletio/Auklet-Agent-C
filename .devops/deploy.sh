@@ -21,7 +21,7 @@ do
     echo "Installing $pkg cross compilation toolchain..."
     sudo apt -y install $pkg > /dev/null 2>&1
   fi
-  CC=$cc AR=$ar TARNAME="$PREFIX-$arch-$VERSION.tgz" ./bt libpkg
+  CC=$cc AR=$ar TARNAME="$PREFIX-$arch-$VERSION.tgz" make libauklet.tgz
   echo
 done < arch-grid.csv
 

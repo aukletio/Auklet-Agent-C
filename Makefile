@@ -3,6 +3,8 @@ include config.mk
 SRC = buf.c timer.c json.c node.c socket.c agent.c
 OBJ = $(SRC:.c=.o)
 
+all: test install
+
 install: libauklet.a
 	sudo cp $< $(INSTALL)/$<
 
@@ -40,7 +42,15 @@ socket.o: socket.c socket.h node.h
 # This rule handles modules buf, node, and timer.
 %.o: %.c %.h
 
-clean:
-	rm -f $(OBJ) libauklet-internal.o libauklet.o libauklet.a libauklet.tgz internal-symbols.txt
+test: json_test
+	./json_test
 
-.PHONY: install uninstall clean
+json_test: json_test.o json.o node.o buf.o
+	$(CC) -o $@ $^
+
+json_test.o: json_test.c json.h node.h buf.h
+
+clean:
+	rm -f $(OBJ) libauklet-internal.o libauklet.o libauklet.a libauklet.tgz internal-symbols.txt json_test json_test.o
+
+.PHONY: install uninstall clean test

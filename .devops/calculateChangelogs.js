@@ -42,6 +42,7 @@ var unreleasedProdPrs = {
 };
 
 // Begin.
+console.log('inside the script');
 process.exit();
 console.log('Getting all closed PRs in this repo...');
 getPaginated({

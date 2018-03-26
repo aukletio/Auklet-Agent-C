@@ -22,7 +22,6 @@ const semverSort = require('semver-sort');
 // Grab inputs.
 const orgName = process.env.CIRCLE_PROJECT_USERNAME;
 const repoName = process.env.CIRCLE_PROJECT_REPONAME;
-const outputDir = process.argv[2];
 
 // Setup global vars.
 var eligiblePrs = [];
@@ -42,8 +41,6 @@ var unreleasedProdPrs = {
 };
 
 // Begin.
-console.log('inside the script');
-process.exit();
 console.log('Getting all closed PRs in this repo...');
 getPaginated({
   uri: `/repos/${orgName}/${repoName}/pulls?per_page=100&state=closed&sort=updated`
@@ -158,8 +155,8 @@ function matchPrsWithTags() {
   console.log('Assembling changelog Markdown...');
   var rcMd = renderMarkdown(unreleasedRcPrs, rcTags);
   var prodMd = renderMarkdown(unreleasedProdPrs, prodTags);
-  fs.writeFileSync(`${outputDir}/README-WITH-RC.md`, rcMd);
-  fs.writeFileSync(`${outputDir}/README.md`, prodMd);
+  fs.writeFileSync('README-WITH-RC.md', rcMd);
+  fs.writeFileSync('README.md', prodMd);
   // Done.
 }
 

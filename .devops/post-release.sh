@@ -47,7 +47,6 @@ npm install --no-spin bluebird any-promise request-promise-any request semver se
 node $THIS_DIR/calculateChangelogs.js
 eval cd $CURRENT_DIR
 # Push the changelog to GitHub.
-# Switch to the changelog branch.
 echo
 echo 'Updating changelog and pushing to GitHub...'
 git checkout changelog

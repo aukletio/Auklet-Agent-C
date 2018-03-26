@@ -17,9 +17,9 @@
 #include <unistd.h>
 
 static char *loglevel[] = {
-	[DEBUG] = "debug", // memory alloc
-	[INFO] = "info",   // init message
-	[FATAL] = "fatal", // unrecoverable error
+	[DEBUG] = "debug",
+	[INFO] = "info",
+	[FATAL] = "fatal",
 };
 
 /* exported functions */

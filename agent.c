@@ -60,8 +60,10 @@ __cyg_profile_func_enter(void *fn, void *cs)
 {
 	if (agentstate == OFF)
 		return;
-	if (!push(&sp, &(Frame){(uintptr_t)fn, (uintptr_t)cs}))
+	if (!push(&sp, &(Frame){(uintptr_t)fn, (uintptr_t)cs})) {
+		logprint(sockfd, FATAL, "push failed");
 		setagentstate(OFF);
+	}
 }
 
 void
@@ -69,8 +71,10 @@ __cyg_profile_func_exit(void *fn, void *cs)
 {
 	if (agentstate == OFF)
 		return;
-	if (!pop(&sp))
+	if (!pop(&sp)) {
+		logprint(sockfd, FATAL, "pop failed");
 		setagentstate(OFF);
+	}
 }
 
 /* private functions */
@@ -124,6 +128,7 @@ setagentstate(int state)
 		siginstall(SIGFPE, SIG_DFL);
 	}
 	agentstate = state;
+	logprint(sockfd, INFO, "agent state: %s", agentstate?"on":"off");
 }
 
 /* setup runs before main and initializes the agent. */

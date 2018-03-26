@@ -3,6 +3,7 @@
 
 #include "node.h"
 
+#include "walloc.h"
 #include <stdlib.h>
 
 static int equal(Frame *a, Frame *b);
@@ -16,7 +17,7 @@ static int grow(Node *n);
 Node *
 newNode(Frame *f, Node *parent)
 {
-	Node *n = malloc(sizeof(Node));
+	Node *n = walloc(NULL, sizeof(Node));
 	if (!n)
 		return NULL;
 	*n = (Node)emptyNode;
@@ -28,6 +29,8 @@ newNode(Frame *f, Node *parent)
 void
 freeNode(Node *n, int root)
 {
+	if (!n)
+		return;
 	for (int i = 0; i < n->len; ++i)
 		freeNode(n->callee[i], 0);
 	free(n->callee);
@@ -38,6 +41,8 @@ freeNode(Node *n, int root)
 int
 push(Node **sp, Frame *f)
 {
+	if (!*sp)
+		return 0;
 	Node *c = getoradd(*sp, f);
 	if (!c)
 		return 0;

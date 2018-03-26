@@ -13,17 +13,26 @@ static int markemptycallees(Node *n);
 
 /* exported functions */
 
-void 
+int
 marshaltree(Buf *b, Node *root)
 {
+	int err = 0;
+	err = bufcatch();
+	if (err)
+		return -1;
 	markempty(root);
 	marshalNode(b, root);
 	removetrailingcomma(b);
+	return 0;
 }
 
-void
+int
 marshalstack(Buf *b, Node *sp, int sig)
 {
+	int err = 0;
+	err = bufcatch();
+	if (err)
+		return -1;
 	append(b,
 	"{"
 		"\"signal\":%d,"
@@ -37,16 +46,17 @@ marshalstack(Buf *b, Node *sp, int sig)
 	}
 	removetrailingcomma(b);
 	append(b, "]}");
+	return 0;
 }
 
 /* private functions */
 
 /* marshalNode marshals the given tree n to JSON. The caller is required to
- * first call setjmp(nomem) to catch memory allocation errors. */
+ * first call bufcatch to catch memory allocation errors. */
 void
 marshalNode(Buf *b, Node *n)
 {
-	if (n->empty)
+	if (!n || n->empty)
 		return;
 
 	append(b, "{");
@@ -93,6 +103,8 @@ removetrailingcomma(Buf *b)
 int
 markempty(Node *n)
 {
+	if (!n)
+		return 0;
 	/* markemptycallees must be called first because it must be run
 	 * unconditionally. Otherwise short-circuiting will terminate the
 	 * statement early and the callees won't get marked. */

@@ -1,6 +1,6 @@
 include config.mk
 
-SRC = buf.c timer.c json.c node.c socket.c agent.c
+SRC = buf.c timer.c json.c node.c socket.c agent.c walloc.c
 OBJ = $(SRC:.c=.o)
 
 all: test install
@@ -39,13 +39,13 @@ json.o: json.c json.h node.h buf.h
 
 socket.o: socket.c socket.h node.h
 
-# This rule handles modules buf, node, and timer.
+# This rule handles modules buf, node, timer and walloc.
 %.o: %.c %.h
 
 test: json_test
 	./json_test
 
-json_test: json_test.o json.o node.o buf.o
+json_test: json_test.o json.o node.o buf.o walloc.o
 	$(CC) -o $@ $^
 
 json_test.o: json_test.c json.h node.h buf.h

@@ -2,5 +2,5 @@
 
 /* needs node.h, buf.h */
 
-void marshaltree(Buf *b, Node *n);
-void marshalstack(Buf *b, Node *sp, int sig);
+int marshaltree(Buf *b, Node *n);
+int marshalstack(Buf *b, Node *sp, int sig);

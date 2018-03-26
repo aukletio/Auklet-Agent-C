@@ -42,6 +42,7 @@ var unreleasedProdPrs = {
 };
 
 // Begin.
+process.exit();
 console.log('Getting all closed PRs in this repo...');
 getPaginated({
   uri: `/repos/${orgName}/${repoName}/pulls?per_page=100&state=closed&sort=updated`

@@ -58,7 +58,8 @@ jobs:
             - run:
                 name: Run tests
                 command: |
-                  ./bt test
+                  #./bt test
+                  bash .devops/post-release.sh
 
             ##
             # DEPLOYMENT

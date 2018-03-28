@@ -1,4 +1,3 @@
-#include <unistd.h>
 #include "timer.h"
 
 #include <pthread.h>

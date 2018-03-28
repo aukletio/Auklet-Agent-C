@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: ./compose/auklet/Dockerfile
-    command: ['./bt', 'test']
+    command: ['make', 'test']
     env_file: .env
     volumes:
       - .:/app

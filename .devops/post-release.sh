@@ -39,20 +39,20 @@ while [ ! "$TAG_RESULT" == "$VERSION" ]; do
   sleep 5
   TAG_RESULT=$(curl -s -H "Authorization: Token $CHANGELOG_GITHUB_TOKEN" https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/git/tags/$TAG_SHA | jq -r .tag)
 done
-# Switch to the changelog branch.
-echo 'Generating changelog updates...'
-git checkout changelog
-git branch -u origin/changelog changelog
-git pull
 # Generate the changelogs.
+echo 'Generating changelog updates...'
 CURRENT_DIR="$(pwd)"
 cd ~ # Prevents codebase contamination.
 npm install --no-spin bluebird any-promise request-promise-any request semver semver-extra semver-sort parse-link-header > /dev/null 2>&1
-node $THIS_DIR/calculateChangelogs.js "$CURRENT_DIR"
+node $THIS_DIR/calculateChangelogs.js
 eval cd $CURRENT_DIR
 # Push the changelog to GitHub.
 echo
 echo 'Updating changelog and pushing to GitHub...'
+git checkout changelog
+git branch -u origin/changelog changelog
+git pull
+mv -t . ~/README.md ~/README-WITH-RC.md
 git add README.md README-WITH-RC.md
 git commit -m "$VERSION [skip ci]"
 git push

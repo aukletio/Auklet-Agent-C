@@ -46,5 +46,6 @@ randseed()
 	long seed;
 	int fd = open("/dev/urandom", O_RDONLY, 0);
 	read(fd, &seed, sizeof(seed));
+	close(fd);
 	srand48(seed);
 }

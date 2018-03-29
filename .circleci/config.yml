@@ -58,7 +58,7 @@ jobs:
             - run:
                 name: Run tests
                 command: |
-                  ./bt test
+                  make -C src/ test
 
             ##
             # DEPLOYMENT

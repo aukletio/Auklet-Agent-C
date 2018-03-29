@@ -21,7 +21,7 @@ do
     echo "Installing $pkg cross compilation toolchain..."
     sudo apt -y install $pkg > /dev/null 2>&1
   fi
-  CC=$cc AR=$ar LD=$ld OC=$oc NM=$nm TARNAME="$PREFIX-$arch-$VERSION.tgz" make clean libauklet.tgz
+  CC=$cc AR=$ar LD=$ld OC=$oc NM=$nm TARNAME="$PREFIX-$arch-$VERSION.tgz" make -C src clean libauklet.tgz
   echo
 done < arch-grid.csv
 

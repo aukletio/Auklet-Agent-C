@@ -9,7 +9,7 @@ has been validated on:
 
 To test, build, and install the agent, run
 
-	make
+	make -C src/
 
 # Docker Setup
 

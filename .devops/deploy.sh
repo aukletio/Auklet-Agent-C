@@ -22,6 +22,7 @@ do
     sudo apt -y install $pkg > /dev/null 2>&1
   fi
   CC=$cc AR=$ar LD=$ld OC=$oc NM=$nm TARNAME="$PREFIX-$arch-$VERSION.tgz" make -C src clean libauklet.tgz
+  mv src/*.tgz .
   echo
 done < arch-grid.csv
 

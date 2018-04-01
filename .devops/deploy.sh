@@ -14,14 +14,15 @@ echo
 PREFIX='libauklet'
 S3_BUCKET='auklet'
 S3_PREFIX='agent/c'
-while IFS=, read arch cc ar pkg
+while IFS=, read arch cc ar ld oc nm pkg
 do
   echo "=== $arch ==="
   if [[ "$pkg" != "" ]]; then
     echo "Installing $pkg cross compilation toolchain..."
     sudo apt -y install $pkg > /dev/null 2>&1
   fi
-  CC=$cc AR=$ar TARNAME="$PREFIX-$arch-$VERSION.tgz" ./bt libpkg
+  CC=$cc AR=$ar LD=$ld OC=$oc NM=$nm TARNAME="$PREFIX-$arch-$VERSION.tgz" make -C src clean libauklet.tgz
+  mv src/*.tgz .
   echo
 done < arch-grid.csv
 

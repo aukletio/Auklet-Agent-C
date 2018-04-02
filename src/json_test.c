@@ -35,7 +35,7 @@ marshaltree_case1(Case *c)
 		.name = __func__,
 		.node = newNode(&(Frame){0, 0}, NULL),
 		.want = "{"
-			"\"nsamples\":1,"
+			"\"nSamples\":1,"
 			"\"callees\":[]"
 		"}",
 	};
@@ -52,7 +52,7 @@ marshaltree_case2(Case *c)
 		.want = "{"
 			"\"callees\":["
 				"{"
-					"\"ncalls\":1,"
+					"\"nCalls\":1,"
 					"\"callees\":[]"
 				"}"
 			"]"
@@ -73,8 +73,8 @@ marshalstack_case0(Case *c)
 			"\"signal\":0,"
 			"\"stack_trace\":["
 				"{"
-					"\"fn\":0,"
-					"\"cs\":0"
+					"\"functionAddress\":0,"
+					"\"callSiteAddress\":0"
 				"}"
 			"]"
 		"}",

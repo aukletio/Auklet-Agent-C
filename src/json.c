@@ -40,8 +40,8 @@ marshalstack(Buf *b, Node *sp, int sig)
 	for (Node *n = sp; n; n = n->parent) {
 		append(b,
 		"{"
-			"\"fn\":%ld,"
-			"\"cs\":%ld"
+			"\"functionAddress\":%ld,"
+			"\"callSiteAddress\":%ld"
 		"},", n->f.fn, n->f.cs);
 	}
 	removetrailingcomma(b);
@@ -61,18 +61,18 @@ marshalNode(Buf *b, Node *n)
 
 	append(b, "{");
 	if (n->f.fn)
-		append(b, "\"fn\":%ld,", (unsigned long)n->f.fn);
+		append(b, "\"functionAddress\":%ld,", (unsigned long)n->f.fn);
 	if (n->f.cs)
-		append(b, "\"cs\":%ld,", (unsigned long)n->f.cs);
+		append(b, "\"callSiteAddress\":%ld,", (unsigned long)n->f.cs);
 
 	pthread_mutex_lock(&n->lcall);
 	if (n->ncall)
-		append(b, "\"ncalls\":%u,", n->ncall);
+		append(b, "\"nCalls\":%u,", n->ncall);
 	pthread_mutex_unlock(&n->lcall);
 
 	pthread_mutex_lock(&n->lsamp);
 	if (n->nsamp)
-		append(b, "\"nsamples\":%u,", n->nsamp);
+		append(b, "\"nSamples\":%u,", n->nsamp);
 	pthread_mutex_unlock(&n->lsamp);
 
 	pthread_mutex_lock(&n->llist);

@@ -71,7 +71,7 @@ marshalstack_case0(Case *c)
 		.node = newNode(&(Frame){0, 0}, NULL),
 		.want = "{"
 			"\"signal\":0,"
-			"\"stack_trace\":["
+			"\"stackTrace\":["
 				"{"
 					"\"functionAddress\":0,"
 					"\"callSiteAddress\":0"

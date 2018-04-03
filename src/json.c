@@ -36,7 +36,7 @@ marshalstack(Buf *b, Node *sp, int sig)
 	append(b,
 	"{"
 		"\"signal\":%d,"
-		"\"stack_trace\":[", sig);
+		"\"stackTrace\":[", sig);
 	for (Node *n = sp; n; n = n->parent) {
 		append(b,
 		"{"

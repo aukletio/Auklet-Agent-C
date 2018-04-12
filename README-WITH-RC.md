@@ -1,5 +1,13 @@
 # Changelog
 
+## Merged But Unreleased
+
+**Fixed bugs:**
+
+- APM-1218 Main has multiple callsites for the same function address [#85](https://github.com/ESG-USA/Auklet-Agent-C/pull/85) ([kdsch](https://github.com/kdsch))
+
+## [0.4.0](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.4.0)
+
 ### [0.4.0-rc.5](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.4.0-rc.5)
 
 **Implemented enhancements:**

@@ -4,40 +4,47 @@ jobs:
     build:
         environment:
             TZ: "/usr/share/zoneinfo/America/Detroit"
-        working_directory: ~/go/src/github.com/ESG-USA/Auklet-Profiler-C
+        working_directory: ~/app
         docker:
             # Ubuntu provides the easiest cross-compilation
             # environment for libauklet.a, but all CircleCI
             # Docker images are based on Debian Jessie.
             #
             # Unfortunately, this means the build takes a
-            # little longer because we have to install NodeJS
-            # and Ruby ourselves.
-            - image: buildpack-deps:xenial-scm
+            # little longer because we have to install NodeJS.
+            - image: circleci/buildpack-deps:xenial-browsers
         steps:
 
             ##
             # SETUP
             ##
+            - run:
+                name: Flag local build
+                command: |
+                  if [[ "$CIRCLE_BUILD_NUM" == '' ]]; then
+                    touch ~/.localCircleBuild
+                  fi
             - add_ssh_keys
             - checkout
             - run:
                 name: Prepare OS
                 command: |
-                  echo 'Installing jq, NodeJS/Ruby prerequisites and other compilation requirements...'
-                  apt-get update > /dev/null 2>&1
-                  apt-get -y install jq software-properties-common build-essential > /dev/null 2>&1
-                  apt-add-repository -y ppa:brightbox/ruby-ng > /dev/null 2>&1
-                  curl -sL https://deb.nodesource.com/setup_8.x | bash - > /dev/null
-                  echo 'Installing Ruby and NodeJS...'
-                  apt-get -y install ruby2.2 nodejs > /dev/null 2>&1
-                  echo 'Installing Go...'
-                  curl -sSL https://redirector.gvt1.com/edgedl/go/go1.8.5.linux-amd64.tar.gz | tar xzf -
-                  mv go /usr/local
-                  curl -sSL https://github.com/golang/dep/releases/download/v0.3.2/dep-linux-amd64 -o /usr/local/go/bin/dep
-                  chmod +x /usr/local/go/bin/dep
-                  echo 'export GOPATH=$(cd ; pwd)/go' >> $BASH_ENV
-                  echo 'export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin' >> $BASH_ENV
+                  echo 'Installing NodeJS...'
+                  curl -sL https://deb.nodesource.com/setup_8.x | sudo bash - > /dev/null
+                  sudo apt -y install nodejs > /dev/null 2>&1
+                  echo 'Installing C compilation requirements...'
+                  sudo apt -y install software-properties-common build-essential > /dev/null 2>&1
+            - run:
+                name: Validate PR
+                command: |
+                  if [[ ! -f ~/.localCircleBuild ]]; then
+                    bash .devops/validate-pr.sh
+                  fi
+            - run:
+                name: Install jq
+                command: |
+                  sudo curl -sSL -o /usr/local/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64
+                  sudo chmod +x /usr/local/bin/jq
             - run:
                 name: Calculate codebase version
                 command: |
@@ -46,30 +53,12 @@ jobs:
                   cp ~/.version VERSION
 
             ##
-            # RESTORE CACHES
-            ##
-            - restore_cache:
-                key: v2-dependency-cache-{{ checksum "Gopkg.lock" }}-{{ checksum "Gopkg.toml" }}
-
-            ##
             # TESTS
             ##
             - run:
-                name: Download Go dependencies
-                command: |
-                  dep ensure -v
-            - run:
                 name: Run tests
                 command: |
-                  ./bt test
-
-            ##
-            # SAVE CACHES
-            ##
-            - save_cache:
-                key: v2-dependency-cache-{{ checksum "Gopkg.lock" }}-{{ checksum "Gopkg.toml" }}
-                paths:
-                    - /root/go/pkg/dep/sources
+                  make -C src/ test
 
             ##
             # DEPLOYMENT
@@ -78,22 +67,28 @@ jobs:
                 name: Deploy Edge (If staging)
                 command: |
                   set -ou pipefail
-                  if [ "${CIRCLE_BRANCH}" == "edge" ]; then
-                    bash .devops/deploy.sh staging
+                  if [[ ! -f ~/.localCircleBuild ]]; then
+                    if [ "${CIRCLE_BRANCH}" == "edge" ]; then
+                      bash .devops/deploy.sh staging
+                    fi
                   fi
             - run:
                 name: Deploy QA (If master)
                 command: |
                   set -ou pipefail
-                  if [ "${CIRCLE_BRANCH}" == "master" ]; then
-                    bash .devops/deploy.sh qa
-                    bash .devops/post-release.sh
+                  if [[ ! -f ~/.localCircleBuild ]]; then
+                    if [ "${CIRCLE_BRANCH}" == "master" ]; then
+                      bash .devops/deploy.sh qa
+                      bash .devops/post-release.sh
+                    fi
                   fi
             - run:
                 name: Deploy Production (If production)
                 command: |
                   set -ou pipefail
-                  if [ "${CIRCLE_BRANCH}" == "production" ]; then
-                    bash .devops/deploy.sh production
-                    bash .devops/post-release.sh
+                  if [[ ! -f ~/.localCircleBuild ]]; then
+                    if [ "${CIRCLE_BRANCH}" == "production" ]; then
+                      bash .devops/deploy.sh production
+                      bash .devops/post-release.sh
+                    fi
                   fi

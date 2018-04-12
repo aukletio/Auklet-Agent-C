@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: ./compose/auklet/Dockerfile
+    command: ['make', '-C', 'test']
     env_file: .env
     volumes:
-      - .:/go/src/github.com/user/myProject/app
+      - .:/app

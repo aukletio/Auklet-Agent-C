@@ -1,5 +1,0 @@
-#!/bin/sh
-# http://www.entrproject.org/
-while true; do
-	ls bt bt.cfg *.c release/*.go wrap/*.go | entr -dcs './bt';
-done

@@ -1,7 +1,0 @@
-amd64,cc,ar,
-arm,arm-linux-gnueabihf-gcc,arm-linux-gnueabihf-ar,gcc-arm-linux-gnueabihf
-arm64,aarch64-linux-gnu-gcc,aarch64-linux-gnu-ar,gcc-aarch64-linux-gnu
-mips,mips-linux-gnu-gcc-5,mips-linux-gnu-ar,gcc-5-mips-linux-gnu
-mipsle,mipsel-linux-gnu-gcc-5,mipsel-linux-gnu-ar,gcc-5-mipsel-linux-gnu
-mips64,mips64-linux-gnuabi64-gcc-5,mips64-linux-gnuabi64-ar,gcc-mips64-linux-gnuabi64
-mips64le,mips64el-linux-gnuabi64-gcc-5,mips64el-linux-gnuabi64-ar,gcc-mips64el-linux-gnuabi64

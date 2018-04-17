@@ -6,6 +6,7 @@
 
 #include "json.h"
 
+static int isroot(Node *n);
 static void marshalNode(Buf *b, Node *n);
 static void removetrailingcomma(Buf *b);
 static int markempty(Node *n);
@@ -51,6 +52,12 @@ marshalstack(Buf *b, Node *sp, int sig)
 
 /* private functions */
 
+int
+isroot(Node *n)
+{
+	return n && !n->f.fn && !n->f.cs;
+}
+
 /* marshalNode marshals the given tree n to JSON. The caller is required to
  * first call bufcatch to catch memory allocation errors. */
 void
@@ -62,8 +69,12 @@ marshalNode(Buf *b, Node *n)
 	append(b, "{");
 	if (n->f.fn)
 		append(b, "\"fn\":%ld,", (unsigned long)n->f.fn);
-	if (n->f.cs)
+	if (n->f.cs && !isroot(n->parent)) {
+		/* We don't want to marshal the callsite if the parent is root.
+		 * This is because any child of root does not have a meaningful
+		 * callsite. */
 		append(b, "\"cs\":%ld,", (unsigned long)n->f.cs);
+	}
 
 	pthread_mutex_lock(&n->lcall);
 	if (n->ncall)

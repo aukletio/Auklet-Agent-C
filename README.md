@@ -2,6 +2,12 @@
 
 ## Merged But Unreleased
 
+**Implemented enhancements:**
+
+- APM-1172 APM-1215 Change Tree and Event Fields [#84](https://github.com/ESG-USA/Auklet-Agent-C/pull/84) ([kdsch](https://github.com/kdsch))
+
+## [0.4.1](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.4.1)
+
 **Fixed bugs:**
 
 - APM-1218 Main has multiple callsites for the same function address [#85](https://github.com/ESG-USA/Auklet-Agent-C/pull/85) ([kdsch](https://github.com/kdsch))

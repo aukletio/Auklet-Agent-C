@@ -1,5 +1,13 @@
 # Changelog
 
+## Merged But Unreleased
+
+**Implemented enhancements:**
+
+- APM-1172 APM-1215 Change Tree and Event Fields [#84](https://github.com/ESG-USA/Auklet-Agent-C/pull/84) ([kdsch](https://github.com/kdsch))
+
+## [0.4.1](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.4.1)
+
 ### [0.4.1-rc.1](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.4.1-rc.1)
 
 **Fixed bugs:**

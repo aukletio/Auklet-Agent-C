@@ -34,8 +34,8 @@ static struct {
 	timer_t tid;
 } tmr[] = {
 	/*        clk                       value */
-	[REAL] = {CLOCK_REALTIME,           {.tv_sec = 10, .tv_nsec = 0}},
-	[VIRT] = {CLOCK_PROCESS_CPUTIME_ID, {.tv_sec =  1, .tv_nsec = 0}},
+	[REAL] = {CLOCK_REALTIME,           {.tv_sec = 120, .tv_nsec = 0}},
+	[VIRT] = {CLOCK_PROCESS_CPUTIME_ID, {.tv_sec = 60, .tv_nsec = 0}},
 };
 
 static void (*timerfunc)() = NULL;

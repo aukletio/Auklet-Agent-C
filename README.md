@@ -1,5 +1,12 @@
 # Changelog
 
+## Merged But Unreleased
+
+**Implemented enhancements:**
+
+- APM-1274 Set Agent Emission Rate to 1 Minute [#91](https://github.com/ESG-USA/Auklet-Agent-C/pull/91) ([kdsch](https://github.com/kdsch))
+- APM-1209 Write C Agent Benchmarks [#86](https://github.com/ESG-USA/Auklet-Agent-C/pull/86) ([kdsch](https://github.com/kdsch))
+
 ## [0.5.0](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.5.0)
 
 **Implemented enhancements:**

@@ -1,5 +1,7 @@
 # Changelog
 
+## [0.6.0](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.6.0)
+
 ### [0.6.0-rc.1](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.6.0-rc.1)
 
 **Implemented enhancements:**

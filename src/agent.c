@@ -1,6 +1,6 @@
 /* Module agent implements an Auklet agent for C or C++ programs. */
 
-#include "timer.h"
+#include "server.h"
 
 #include <pthread.h>
 #include <stdint.h>
@@ -26,7 +26,8 @@ enum {
 
 static void sigprof(int n);
 static void sigerr(int n);
-static void profilefunc();
+static void profilehandler();
+static void siginstall(int sig, void (*handler)(int));
 static void setagentstate(int state);
 static void __attribute__ ((constructor (101))) setup();
 static void __attribute__ ((destructor (101))) cleanup();
@@ -95,11 +96,25 @@ sigerr(int n)
 	_exit(1);
 }
 
-/* profilefunc calls sendprofile. It is executed when the timer expires. */
+/* profilehandler calls sendprofile. It is executed when the agent receives an
+ * emission request. */
 void
-profilefunc()
+profilehandler()
 {
 	sendprofile(sockfd, &root);
+}
+
+/* siginstall installs handler as the signal handler for sig. */
+void
+siginstall(int sig, void (*handler)(int))
+{
+	struct sigaction sa;
+	sigaction(sig, NULL, &sa);
+	sa.sa_handler = handler;
+	/* We fill the signal mask to prevent handler from getting interrupted
+	 * by another handler. */
+	sigfillset(&sa.sa_mask);
+	sigaction(sig, &sa, NULL);
 }
 
 /* setagentstate turns the agent on or off. */
@@ -117,10 +132,10 @@ setagentstate(int state)
 		siginstall(SIGILL, sigerr);
 		siginstall(SIGFPE, sigerr);
 		setitimer(ITIMER_PROF, &sigproftimer, NULL);
-		starttimer(profilefunc);
+		startserver(sockfd, profilehandler);
 		break;
 	case OFF:
-		stoptimer();
+		stopserver();
 		setitimer(ITIMER_PROF, &stop, NULL);
 		siginstall(SIGPROF, SIG_DFL);
 		siginstall(SIGSEGV, SIG_DFL);

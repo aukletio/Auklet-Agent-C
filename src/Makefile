@@ -1,6 +1,6 @@
 include config.mk
 
-SRC = buf.c timer.c json.c node.c socket.c agent.c walloc.c
+SRC = buf.c server.c json.c node.c socket.c agent.c walloc.c
 OBJ = $(SRC:.c=.o)
 
 all: test install
@@ -33,13 +33,13 @@ libauklet-internal.o: $(OBJ)
 	$(LD) -r $^ -o $@
 
 agent.o: CFLAGS += -DAUKLET_VERSION=\"$$(cat ../VERSION)\" -DAUKLET_TIMESTAMP=\"${TIMESTAMP}\"
-agent.o: agent.c timer.h node.h socket.h buf.h json.h
+agent.o: agent.c server.h node.h socket.h buf.h json.h
 
 json.o: json.c json.h node.h buf.h
 
 socket.o: socket.c socket.h node.h
 
-# This rule handles modules buf, node, timer and walloc.
+# This rule handles modules buf, node, server and walloc.
 %.o: %.c %.h
 
 test: json_test

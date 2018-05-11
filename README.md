@@ -1,5 +1,11 @@
 # Changelog
 
+## Merged But Unreleased
+
+**Implemented enhancements:**
+
+- APM-1276 Bidirectional Communication for Agent and Client [#93](https://github.com/ESG-USA/Auklet-Agent-C/pull/93) ([kdsch](https://github.com/kdsch))
+
 ## [0.6.0](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.6.0)
 
 **Implemented enhancements:**

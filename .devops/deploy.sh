@@ -22,13 +22,13 @@ do
     sudo apt -y install $pkg > /dev/null 2>&1
   fi
   CC=$cc AR=$ar LD=$ld OC=$oc NM=$nm TARNAME="$PREFIX-$arch-$VERSION.tgz" make -C src clean libauklet.tgz install
-  make -C bench clean overhead
+  CC=$cc make -C bench clean overhead
   mv bench/overhead "$PREFIX-bench-overhead-$arch-$VERSION"
   mv src/*.tgz .
   make -C src uninstall
   echo
 done < arch-grid.csv
-
+exit # remove this after the bug is fixed!
 echo 'Installing AWS CLI...'
 sudo apt -y install awscli > /dev/null 2>&1
 

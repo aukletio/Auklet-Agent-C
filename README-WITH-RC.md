@@ -1,5 +1,13 @@
 # Changelog
 
+## Merged But Unreleased
+
+**DevOps changes:**
+
+- .devops: build agent benchmark [#97](https://github.com/ESG-USA/Auklet-Agent-C/pull/97) ([kdsch](https://github.com/kdsch))
+
+## [0.7.0](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.7.0)
+
 ### [0.7.0-rc.1](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.7.0-rc.1)
 
 **Implemented enhancements:**

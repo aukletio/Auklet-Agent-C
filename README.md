@@ -2,6 +2,12 @@
 
 ## Merged But Unreleased
 
+**DevOps changes:**
+
+- .devops: build agent benchmark [#97](https://github.com/ESG-USA/Auklet-Agent-C/pull/97) ([kdsch](https://github.com/kdsch))
+
+## [0.7.0](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.7.0)
+
 **Implemented enhancements:**
 
 - APM-1276 Bidirectional Communication for Agent and Client [#93](https://github.com/ESG-USA/Auklet-Agent-C/pull/93) ([kdsch](https://github.com/kdsch))

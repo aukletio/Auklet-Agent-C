@@ -28,7 +28,7 @@ do
   make -C src uninstall
   echo
 done < arch-grid.csv
-exit # remove this after the bug is fixed!
+
 echo 'Installing AWS CLI...'
 sudo apt -y install awscli > /dev/null 2>&1
 

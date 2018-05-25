@@ -2,6 +2,10 @@
 
 ## Merged But Unreleased
 
+**Fixed bugs:**
+
+- Troubleshooting bugs in Docker for VDAS [#98](https://github.com/ESG-USA/Auklet-Agent-C/pull/98) ([kdsch](https://github.com/kdsch))
+
 **DevOps changes:**
 
 - .devops: build agent benchmark [#97](https://github.com/ESG-USA/Auklet-Agent-C/pull/97) ([kdsch](https://github.com/kdsch))

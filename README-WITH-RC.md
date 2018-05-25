@@ -1,6 +1,10 @@
 # Changelog
 
-## Merged But Unreleased
+### [0.7.1-rc.1](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.7.1-rc.1)
+
+**Fixed bugs:**
+
+- Troubleshooting bugs in Docker for VDAS [#98](https://github.com/ESG-USA/Auklet-Agent-C/pull/98) ([kdsch](https://github.com/kdsch))
 
 **DevOps changes:**
 

@@ -31,7 +31,7 @@ connecttoclient()
 {
 	struct sockaddr_un remote;
 	int l, fd;
-	if ((fd = socket(AF_UNIX, SOCK_SEQPACKET, 0)) == -1)
+	if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1)
 		return 0;
 	remote.sun_family = AF_UNIX;
 	sprintf(remote.sun_path, "/tmp/auklet-%d", getppid());

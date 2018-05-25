@@ -17,15 +17,15 @@ libauklet.tgz: libauklet.a
 libauklet.a: libauklet.o
 	$(AR) rcs $@ $<
 
-# libauklet.o has no internal interfaces exposed. Only the instrumentation
-# functions are globally visible.
+# libauklet.o has all internal interfaces prefixed. Only the instrumentation
+# functions are not prefixed.
 libauklet.o: libauklet-internal.o internal-symbols.txt
-	$(OC) --localize-symbols=internal-symbols.txt $< $@
+	$(OC) --redefine-syms=internal-symbols.txt $< $@
 
-# internal-symbols.txt lists the symbols of all the internal interfaces, which
-# we want to localize.
+# internal-symbols.txt lists the symbols of all the internal interfaces, which,
+# to avoid naming collisions, we want to prefix.
 internal-symbols.txt: libauklet-internal.o
-	$(NM) -g --defined-only $< | awk '$$3 !~ /^__cyg_profile_func_e/ {print $$3}' >$@
+	$(NM) -g --defined-only $< | awk '$$3 !~ /^__cyg_profile_func_e/ {printf "%s libauklet_%s\n",$$3,$$3}' >$@
 
 # libauklet-internal.o links each module into one object file. However, the
 # internal interfaces are global symbols, which could lead to naming collisions.

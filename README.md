@@ -1,6 +1,6 @@
 # Changelog
 
-## Merged But Unreleased
+## [0.7.1](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.7.1)
 
 **Fixed bugs:**
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## Merged But Unreleased
+
+**Fixed bugs:**
+
+- APM-1316 C Agent ARM Benchmark Negative Numbers [#102](https://github.com/ESG-USA/Auklet-Agent-C/pull/102) ([kdsch](https://github.com/kdsch))
+
 ## [0.7.1](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.7.1)
 
 **Fixed bugs:**

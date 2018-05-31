@@ -80,6 +80,7 @@ jobs:
                     if [ "${CIRCLE_BRANCH}" == "master" ]; then
                       bash .devops/deploy.sh qa
                       bash .devops/post-release.sh
+                      bash .devops/updateProdReleasePr.sh
                     fi
                   fi
             - run:

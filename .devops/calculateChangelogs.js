@@ -95,7 +95,7 @@ function getAllTags() {
         }).catch(catchPromiseError)
       );
     });
-    Promise.all(promises).then(function() {
+    Promise.each(promises, (i, x, l) => i).then(function() {
       // Get a deep clone of the RC tags array and drop all non-RC tags from it.
       prodTags = JSON.parse(JSON.stringify(rcTags));
       prodTags = prodTags.filter(function(tag) { return semver.isStable(tag.name); });
@@ -180,9 +180,12 @@ function getPaginated(options, resultList = []) {
         if (next) {
           var newOptions = Object.assign({}, options);
           newOptions.uri = next;
-          getPaginated(newOptions, resultList).then(function(newResultList) {
-            resolve(newResultList);
-          });
+          // Wait for 1 second before getting the next page, to avoid abuse rate limits.
+          setTimeout(function() {
+            getPaginated(newOptions, resultList).then(function(newResultList) {
+              resolve(newResultList);
+            });
+          }, 1000);
         } else {
           resolve(resultList);
         }

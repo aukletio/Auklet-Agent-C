@@ -149,9 +149,12 @@ function getPaginated(options, resultList = []) {
         if (next) {
           var newOptions = Object.assign({}, options);
           newOptions.uri = next;
-          getPaginated(newOptions, resultList).then(function(newResultList) {
-            resolve(newResultList);
-          });
+          // Wait for 1 second before getting the next page, to avoid abuse rate limits.
+          setTimeout(function() {
+            getPaginated(newOptions, resultList).then(function(newResultList) {
+              resolve(newResultList);
+            });
+          }, 1000);
         } else {
           resolve(resultList);
         }

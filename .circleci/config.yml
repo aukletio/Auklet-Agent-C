@@ -80,6 +80,8 @@ jobs:
                     if [ "${CIRCLE_BRANCH}" == "master" ]; then
                       bash .devops/deploy.sh qa
                       bash .devops/post-release.sh
+                      # Need to checkout master again so we can run more scripts.
+                      git checkout master
                       bash .devops/updateProdReleasePr.sh
                     fi
                   fi

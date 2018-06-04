@@ -91,7 +91,7 @@ function getAllTags() {
           cwd: repoDir
         }).then(function(stdout) {
           tag.commits = JSON.parse(stdout);
-        }).catch(catchPromiseError);
+        }).catch(catchPromiseError)
       );
     });
     Promise.all(promises).then(function() {

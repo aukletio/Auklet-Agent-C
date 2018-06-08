@@ -12,6 +12,7 @@ export TIMESTAMP="$(date --rfc-3339=seconds | sed 's/ /T/')"
 echo 'Compiling/packaging C agent binaries...'
 echo
 PREFIX='libauklet'
+BENCH_PREFIX="$PREFIX-bench-overhead"
 S3_BUCKET='auklet'
 S3_PREFIX='agent/c'
 while IFS=, read arch cc ar ld oc nm pkg
@@ -23,7 +24,7 @@ do
   fi
   CC=$cc AR=$ar LD=$ld OC=$oc NM=$nm TARNAME="$PREFIX-$arch-$VERSION.tgz" make -C src clean libauklet.tgz install
   CC=$cc make -C bench clean overhead
-  mv bench/overhead "$PREFIX-bench-overhead-$arch-$VERSION"
+  mv bench/overhead "$BENCH_PREFIX-$arch-$VERSION"
   mv src/*.tgz .
   make -C src uninstall
   echo
@@ -43,6 +44,10 @@ for f in ${PREFIX}-*; do
   # Upload to the internal bucket.
   S3_LOCATION="s3://auklet-profiler/$ENVDIR/$S3_PREFIX/$VERSION/$f"
   aws s3 cp $f $S3_LOCATION
+  # Do not upload the benchmark tool to the public bucket.
+  if [[ $f == ${BENCH_PREFIX}* ]]; then
+    continue;
+  fi
   # Upload to the public bucket for production builds.
   if [[ "$ENVDIR" == "production" ]]; then
     # Copy to the public versioned directory.

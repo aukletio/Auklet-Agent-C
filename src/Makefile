@@ -12,7 +12,7 @@ uninstall:
 	sudo rm -f $(INSTALL)/libauklet.a
 
 libauklet.tgz: libauklet.a
-	tar cz -f $(TARNAME) $<
+	tar cz -f $(TARNAME) $< LICENSE
 
 libauklet.a: libauklet.o
 	$(AR) rcs $@ $<

@@ -1,5 +1,24 @@
 # Changelog
 
+### [0.8.0-rc.1](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.8.0-rc.1)
+
+**Implemented enhancements:**
+
+- License under Apache 2.0 [#109](https://github.com/ESG-USA/Auklet-Agent-C/pull/109) ([rjenkinsjr](https://github.com/rjenkinsjr))
+
+**Fixed bugs:**
+
+- Fix libauklet.tgz target [#110](https://github.com/ESG-USA/Auklet-Agent-C/pull/110) ([rjenkinsjr](https://github.com/rjenkinsjr))
+
+**DevOps changes:**
+
+- Push prod branch to aukletio [#111](https://github.com/ESG-USA/Auklet-Agent-C/pull/111) ([rjenkinsjr](https://github.com/rjenkinsjr))
+- Fix prod PR update script [#108](https://github.com/ESG-USA/Auklet-Agent-C/pull/108) ([rjenkinsjr](https://github.com/rjenkinsjr))
+- Fix changelog generation syntax [#107](https://github.com/ESG-USA/Auklet-Agent-C/pull/107) ([rjenkinsjr](https://github.com/rjenkinsjr))
+- TS-419: Stop using GitHub API for gathering commit lists [#106](https://github.com/ESG-USA/Auklet-Agent-C/pull/106) ([rjenkinsjr](https://github.com/rjenkinsjr))
+- TS-417: update prod release PR after QA release finishes [#105](https://github.com/ESG-USA/Auklet-Agent-C/pull/105) ([rjenkinsjr](https://github.com/rjenkinsjr))
+- APM-1329: Fix GitHub API abuse rate limits [#104](https://github.com/ESG-USA/Auklet-Agent-C/pull/104) ([rjenkinsjr](https://github.com/rjenkinsjr))
+
 ### [0.7.2-rc.1](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.7.2-rc.1)
 
 **Fixed bugs:**

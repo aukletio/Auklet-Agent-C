@@ -16,12 +16,14 @@ const github = rp.defaults({
 // Include other dependent libraries.
 const fs = require('fs');
 const Promise = require('any-promise');
+const cp = require("child_process");
 const semver = require('semver-extra');
 const semverSort = require('semver-sort');
 
 // Grab inputs.
 const orgName = process.env.CIRCLE_PROJECT_USERNAME;
 const repoName = process.env.CIRCLE_PROJECT_REPONAME;
+const repoDir = process.argv[2];
 
 // Setup global vars.
 var eligiblePrs = [];
@@ -61,20 +63,17 @@ getPaginated({
 
 function getAllTags() {
   console.log('Getting all tags in this repo...');
-  getPaginated({
-    uri: `/repos/${orgName}/${repoName}/tags?per_page=100`
-  }).then(function(tags) {
-    // Extract the tag names (versions) and sort oldest to newest.
-    var tagNames = semverSort.asc(tags.map(function(tag) { return tag.name; }));
-    console.log(`Tags found (${tags.length}):\n${JSON.stringify(tagNames, null, 2)}`);
-    // Assemble a new list of tags that we know is propertly sorted.
-    tagNames.forEach(function(tagName) {
-      rcTags.push(tags.find(function(tag) { return tag.name === tagName; }));
-    });
-    rcTags = rcTags.map(function(tag) { return {
-      "name": tag.name,
-      "md": `[${tag.name}](https://github.com/${orgName}/${repoName}/tree/${tag.name})`,
-      "sha": tag.commit.sha,
+  execPromise('git tag | jq --raw-input --slurp \'split("\n") | map(select(length > 0))\'', {
+    cwd: repoDir
+  }).then(function(stdout) {
+    var tags = JSON.parse(stdout);
+    // Sort oldest to newest.
+    semverSort.asc(tags);
+    console.log(`Tags found (${tags.length}):\n${JSON.stringify(tags, null, 2)}`);
+    // Assemble a new list of RC tags with the desired schema.
+    rcTags = tags.slice(0).map(function(tag) { return {
+      "name": tag,
+      "md": `[${tag}](https://github.com/${orgName}/${repoName}/tree/${tag})`,
       "commits": [],
       "pullRequests": {
         "breaking": [],
@@ -88,10 +87,10 @@ function getAllTags() {
     var promises = [];
     rcTags.forEach(function(tag) {
       promises.push(
-        getPaginated({
-          uri: `repos/${orgName}/${repoName}/commits?per_page=100&sha=${tag.sha}`
-        }).then(function(tagCommits) {
-          tag.commits = tagCommits.map(function(commit) { return commit.sha; });
+        execPromise(`git log --pretty=%H ${tag.name} | jq --raw-input --slurp 'split("\n") | map(select(length > 0))'`, {
+          cwd: repoDir
+        }).then(function(stdout) {
+          tag.commits = JSON.parse(stdout);
         }).catch(catchPromiseError)
       );
     });
@@ -141,11 +140,9 @@ function matchPrsWithTags() {
   });
   // Drop the list of tag commits.
   for (let tag of rcTags) {
-    delete tag.sha;
     delete tag.commits;
   }
   for (let tag of prodTags) {
-    delete tag.sha;
     delete tag.commits;
   }
   // Reverse the tag lists so we render Markdown from newest to oldest.
@@ -180,9 +177,12 @@ function getPaginated(options, resultList = []) {
         if (next) {
           var newOptions = Object.assign({}, options);
           newOptions.uri = next;
-          getPaginated(newOptions, resultList).then(function(newResultList) {
-            resolve(newResultList);
-          });
+          // Wait for 1 second before getting the next page, to avoid abuse rate limits.
+          setTimeout(function() {
+            getPaginated(newOptions, resultList).then(function(newResultList) {
+              resolve(newResultList);
+            });
+          }, 1000);
         } else {
           resolve(resultList);
         }
@@ -190,6 +190,20 @@ function getPaginated(options, resultList = []) {
         reject(getHttpError(response));
       }
     }).catch(function(e) { reject(e); });
+  });
+}
+// child_process.exec, as a promise.
+function execPromise(cmd, options) {
+  return new Promise((resolve, reject) => {
+    cp.exec(cmd, options, (error, stdout, stderr) => {
+      if (error) {
+        reject(error);
+      } else if (stderr) {
+        reject(stderr);
+      } else {
+        resolve(stdout);
+      }
+    });
   });
 }
 // Markdown rendering functions.

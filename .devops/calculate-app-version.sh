@@ -33,11 +33,14 @@ else
     NEW_VERSION='0.1.0'
   else
     echo "Current production version: $BASE_VERSION"
+    # Fetch all Git tags so we can get the SHA-1 of the latest prod version.
+    echo 'Fetching all Git tags...'
+    $(eval cd $CIRCLE_WORKING_DIRECTORY ; git fetch --tags)
     # 3. Determine the highest integer that should be bumped.
     echo 'Preparing to calculate next version...'
-    FULL_GIT_SHA=$(eval cd $CIRCLE_WORKING_DIRECTORY ; git rev-parse HEAD | xargs)
     npm install --no-spin parse-link-header > /dev/null 2>&1
-    node $THIS_DIR/determineVersionChange.js $BASE_VERSION $FULL_GIT_SHA $PR_NUM
+    eval REPO_DIR=$CIRCLE_WORKING_DIRECTORY
+    node $THIS_DIR/determineVersionChange.js $REPO_DIR $BASE_VERSION $PR_NUM
     MODE=$(cat mode.txt)
     # 4. Bump the version.
     if [[ "$MODE" == "none" ]]; then

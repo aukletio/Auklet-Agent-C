@@ -1,7 +1,8 @@
 #include <time.h>
 #include <stdio.h>
+#include <stdint.h>
 
-#define MICROSECOND 1000l
+#define MICROSECOND 1000
 #define MILLISECOND (1000 * MICROSECOND)
 #define SECOND (1000 * MILLISECOND)
 #define NOINST __attribute__ ((no_instrument_function))
@@ -23,26 +24,26 @@ typedef struct {
 
 	void (*base)(int, int);
 	void (*inst)(int, int);
-	long basetime;
-	long insttime;
+	int64_t basetime;
+	int64_t insttime;
 	double overheadpct;
 	double overheadabs;
 } BM;
 
 NOINST
-long
+int64_t
 now()
 {
 	struct timespec t;
 	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t);
-	return SECOND * t.tv_sec + t.tv_nsec;
+	return (int64_t)SECOND * (int64_t)t.tv_sec + (int64_t)t.tv_nsec;
 }
 
 NOINST
-long
+int64_t
 timefunc(BM *bm, void (*func)(int, int))
 {
-	long start = now();
+	int64_t start = now();
 	for (int i = 0; i < bm->count; ++i)
 		func(bm->loops, bm->callees);
 	return now() - start;

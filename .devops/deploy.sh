@@ -58,3 +58,17 @@ for f in ${PREFIX}-*; do
     aws s3 cp $S3_LOCATION s3://$S3_BUCKET/$S3_PREFIX/latest/$LATEST_NAME
   fi
 done
+
+# Push to public GitHub repo.
+# The hostname "aukletio.github.com" is intentional and it matches the "ssh-config-aukletio" file.
+if [[ "$ENVDIR" == "production" ]]; then
+  echo 'Pushing production branch to github.com/aukletio...'
+  mv ~/.ssh/config ~/.ssh/config-bak
+  cp .devops/ssh-config-aukletio ~/.ssh/config
+  chmod 400 ~/.ssh/config
+  git remote add aukletio git@aukletio.github.com:aukletio/Auklet-Agent-C.git
+  git push aukletio HEAD:master
+  git remote rm aukletio
+  rm -f ~/.ssh/config
+  mv ~/.ssh/config-bak ~/.ssh/config
+fi

@@ -12,8 +12,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <sys/un.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 static char *loglevel[] = {
@@ -29,14 +29,9 @@ static char *loglevel[] = {
 int
 connecttoclient()
 {
-	struct sockaddr_un remote;
-	int l, fd;
-	if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1)
-		return 0;
-	remote.sun_family = AF_UNIX;
-	sprintf(remote.sun_path, "/tmp/auklet-%d", getppid());
-	l = strlen(remote.sun_path) + sizeof(remote.sun_family);
-	if (connect(fd, (struct sockaddr *)&remote, l) == -1)
+	int fd = 4;
+	struct stat buf;
+	if (-1 == fstat(fd, &buf))
 		return 0;
 	return fd;
 }

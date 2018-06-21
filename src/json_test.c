@@ -70,7 +70,7 @@ marshalstack_case0(Case *c)
 		.name = __func__,
 		.node = newNode(&(Frame){0, 0}, NULL),
 		.want = "{"
-			"\"signal\":0,"
+			"\"signal\":\"Unknown signal 0\","
 			"\"stackTrace\":["
 				"{"
 					"\"functionAddress\":0,"

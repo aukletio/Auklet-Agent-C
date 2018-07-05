@@ -1,5 +1,11 @@
 # Changelog
 
+### [0.9.0-rc.1](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.9.0-rc.1)
+
+**Implemented enhancements:**
+
+- socket: use anonymous socket inherited from client [#114](https://github.com/ESG-USA/Auklet-Agent-C/pull/114) ([kdsch](https://github.com/kdsch))
+
 ## [0.8.0](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.8.0)
 
 ### [0.8.0-rc.1](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.8.0-rc.1)

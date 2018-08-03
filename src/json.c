@@ -37,8 +37,9 @@ marshalstack(Buf *b, Node *sp, int sig)
 		return -1;
 	append(b,
 	"{"
+		"\"agentVersion\":\"%s\","
 		"\"signal\":\"%s\","
-		"\"stackTrace\":[", strsignal(sig));
+		"\"stackTrace\":[", AUKLET_VERSION, strsignal(sig));
 	for (Node *n = sp; n; n = n->parent) {
 		append(b,
 		"{"

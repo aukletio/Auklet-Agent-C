@@ -45,10 +45,9 @@ logprint(int fd, int level, char *fmt, ...)
 	append(&b, "{"
 		"\"type\":\"log\","
 		"\"data\":{"
-			"\"agentVersion\":\"%s\","
 			"\"level\":\"%s\","
 			"\"message\":\"%s\""
-		"}}\n", AUKLET_VERSION, loglevel[level], fmt);
+		"}}\n", loglevel[level], fmt);
 	va_start(ap, fmt);
 	ret = vdprintf(fd, b.buf, ap);
 	va_end(ap);
@@ -60,9 +59,7 @@ void
 sendstacktrace(int fd, Node *sp, int sig)
 {
 	Buf b = emptyBuf;
-	append(&b, "{"
-		"\"type\":\"event\","
-		"\"data\":");
+	append(&b, "{\"type\":\"event\",\"data\":");
 	marshalstack(&b, sp, sig);
 	append(&b, "}\n");
 	write(fd, b.buf, b.len);
@@ -73,11 +70,7 @@ void
 sendprofile(int fd, Node *root)
 {
 	Buf b = emptyBuf;
-	append(&b, "{"
-		"\"type\":\"profile\","
-		"\"data\":{"
-			"\"agentVersion\":\"%s\","
-			"\"tree\":", AUKLET_VERSION);
+	append(&b, "{\"type\":\"profile\",\"data\":{\"tree\":");
 	marshaltree(&b, root);
 	append(&b, "}}\n");
 	if (-1 != write(fd, b.buf, b.len))

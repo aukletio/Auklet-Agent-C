@@ -70,7 +70,6 @@ marshalstack_case0(Case *c)
 		.name = __func__,
 		.node = newNode(&(Frame){0, 0}, NULL),
 		.want = "{"
-			"\"agentVersion\":\"local-build\","
 			"\"signal\":\"Unknown signal 0\","
 			"\"stackTrace\":["
 				"{"

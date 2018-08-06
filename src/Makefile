@@ -32,6 +32,7 @@ internal-symbols.txt: libauklet-internal.o
 libauklet-internal.o: $(OBJ)
 	$(LD) -r $^ -o $@
 
+agent.o: CFLAGS += -DAUKLET_VERSION=\"$$(cat ../VERSION)\" -DAUKLET_TIMESTAMP=\"${TIMESTAMP}\"
 agent.o: agent.c server.h node.h socket.h buf.h json.h
 
 json.o: json.c json.h node.h buf.h

@@ -15,6 +15,7 @@
 #include "json.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <sys/time.h>
 
 #define SAMPLE_PERIOD {.tv_sec = 0, .tv_usec = 10000}
@@ -151,7 +152,7 @@ void
 setup()
 {
 	sockfd = connecttoclient();
-	logprint(sockfd, INFO, "Auklet Instrument version %s (%s)", AUKLET_VERSION, AUKLET_TIMESTAMP);
+	dprintf(sockfd, "{\"version\":\"%s %s\"}", AUKLET_VERSION, AUKLET_TIMESTAMP);
 	setagentstate(ON);
 }
 

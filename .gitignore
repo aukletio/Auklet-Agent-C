@@ -88,3 +88,5 @@ auklet.conf
 lib_test
 .auklet
 .env
+src/internal-symbols.txt
+src/json_test

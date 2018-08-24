@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <string.h>
 #include <pthread.h>
 
 #include "node.h"
@@ -36,8 +37,8 @@ marshalstack(Buf *b, Node *sp, int sig)
 		return -1;
 	append(b,
 	"{"
-		"\"signal\":%d,"
-		"\"stackTrace\":[", sig);
+		"\"signal\":\"%s\","
+		"\"stackTrace\":[", strsignal(sig));
 	for (Node *n = sp; n; n = n->parent) {
 		append(b,
 		"{"

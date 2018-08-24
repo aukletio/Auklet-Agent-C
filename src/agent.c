@@ -15,6 +15,7 @@
 #include "json.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <sys/time.h>
 
 #define SAMPLE_PERIOD {.tv_sec = 0, .tv_usec = 10000}
@@ -92,6 +93,7 @@ sigprof(int n)
 void
 sigerr(int n)
 {
+	profilehandler();
 	sendstacktrace(sockfd, sp, n);
 	_exit(1);
 }
@@ -151,7 +153,7 @@ void
 setup()
 {
 	sockfd = connecttoclient();
-	logprint(sockfd, INFO, "Auklet Instrument version %s (%s)", AUKLET_VERSION, AUKLET_TIMESTAMP);
+	dprintf(sockfd, "{\"version\":\"%s %s\"}", AUKLET_VERSION, AUKLET_TIMESTAMP);
 	setagentstate(ON);
 }
 
@@ -159,6 +161,7 @@ setup()
 void
 cleanup()
 {
+	profilehandler();
 	setagentstate(OFF);
 	freeNode(&root, 1);
 	close(sockfd);

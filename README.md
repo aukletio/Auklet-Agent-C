@@ -4,6 +4,7 @@
 
 **Implemented enhancements:**
 
+- agent: emit profile at exit [#122](https://github.com/ESG-USA/Auklet-Agent-C/pull/122) ([kdsch](https://github.com/kdsch))
 - APM-1432  C/C++ Package Version Information [#120](https://github.com/ESG-USA/Auklet-Agent-C/pull/120) ([kdsch](https://github.com/kdsch))
 -  APM-1359 Data Transmission Optimizations in C/C++ Client [#115](https://github.com/ESG-USA/Auklet-Agent-C/pull/115) ([kdsch](https://github.com/kdsch))
 

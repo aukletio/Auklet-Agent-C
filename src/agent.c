@@ -93,6 +93,7 @@ sigprof(int n)
 void
 sigerr(int n)
 {
+	profilehandler();
 	sendstacktrace(sockfd, sp, n);
 	_exit(1);
 }
@@ -160,6 +161,7 @@ setup()
 void
 cleanup()
 {
+	profilehandler();
 	setagentstate(OFF);
 	freeNode(&root, 1);
 	close(sockfd);

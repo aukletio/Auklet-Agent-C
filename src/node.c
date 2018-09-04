@@ -3,8 +3,8 @@
 
 #include "node.h"
 
-#include "walloc.h"
 #include <stdlib.h>
+#include "walloc.h"
 
 static int equal(Frame *a, Frame *b);
 static Node *get(Node *n, Frame *f);

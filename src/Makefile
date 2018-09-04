@@ -2,7 +2,7 @@ include config.mk
 
 SRC = buf.c server.c json.c node.c socket.c agent.c walloc.c
 OBJ = $(SRC:.c=.o)
-GCOV = $(SRC:.c=.gcda) $(SRC:.c=.gcno)
+GCOV = $(SRC:.c=.gcda) $(SRC:.c=.gcno) $(SRC:.c=.gcov)
 
 all: test install
 

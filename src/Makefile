@@ -2,7 +2,7 @@ include config.mk
 
 SRC = buf.c server.c json.c node.c socket.c agent.c walloc.c
 OBJ = $(SRC:.c=.o)
-GCOV = $(SRC:.c=.gcda) $(SRC:.c=.gcno) $(SRC:.c=.gcov)
+GCOV = $(SRC:.c=.gcda) $(SRC:.c=.gcno) $(SRC:.c=.c.gcov) json_test.gcda json_test.gcno
 
 all: test install
 
@@ -58,4 +58,4 @@ cover: test
 clean:
 	rm -f $(OBJ) $(GCOV) libauklet-internal.o libauklet.o libauklet.a libauklet.tgz internal-symbols.txt json_test json_test.o
 
-.PHONY: install uninstall clean test
+.PHONY: install uninstall clean test cover

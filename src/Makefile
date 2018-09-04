@@ -2,6 +2,7 @@ include config.mk
 
 SRC = buf.c server.c json.c node.c socket.c agent.c walloc.c
 OBJ = $(SRC:.c=.o)
+GCOV = $(SRC:.c=.gcda) $(SRC:.c=.gcno)
 
 all: test install
 
@@ -46,11 +47,14 @@ test: json_test
 	./json_test
 
 json_test: json_test.o json.o node.o buf.o walloc.o
-	$(CC) -o $@ $^
 
 json_test.o: json_test.c json.h node.h buf.h
 
+cover: CFLAGS += -fprofile-arcs -ftest-coverage
+cover: LDFLAGS += -fprofile-arcs -ftest-coverage
+cover: test
+
 clean:
-	rm -f $(OBJ) libauklet-internal.o libauklet.o libauklet.a libauklet.tgz internal-symbols.txt json_test json_test.o
+	rm -f $(OBJ) $(GCOV) libauklet-internal.o libauklet.o libauklet.a libauklet.tgz internal-symbols.txt json_test json_test.o
 
 .PHONY: install uninstall clean test

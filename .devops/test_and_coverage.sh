@@ -16,10 +16,7 @@ if [[ ! -f ~/.localCircleBuild ]]; then
   ./cc-test-reporter before-build
 fi
 
-cd src
-make cover
-gcov *.c
-cd ..
+make -C src cover
 
 if [[ ! -f ~/.localCircleBuild ]]; then
   # Set -e is disabled momentarily to be able to output the error message to log.txt file.

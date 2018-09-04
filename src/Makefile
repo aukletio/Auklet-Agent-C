@@ -53,6 +53,7 @@ json_test.o: json_test.c json.h node.h buf.h
 cover: CFLAGS += -fprofile-arcs -ftest-coverage
 cover: LDFLAGS += -fprofile-arcs -ftest-coverage
 cover: test
+	gcov $(SRC)
 
 clean:
 	rm -f $(OBJ) $(GCOV) libauklet-internal.o libauklet.o libauklet.a libauklet.tgz internal-symbols.txt json_test json_test.o

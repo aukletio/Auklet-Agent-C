@@ -10,6 +10,8 @@ set -e
 # a test report was already posted for that commit. On line 19-30 we have
 # implemented a check to see if the test reporter throws this message.
 
+export CC_TEST_REPORTER_ID=aa9e2d7b11f99c79a68f15af6e6a31f2f9c640d94e9fc287d5d8938f63956cda
+
 if [[ ! -f ~/.localCircleBuild ]]; then
   curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
   chmod +x ./cc-test-reporter
@@ -21,7 +23,7 @@ make -C src cover
 if [[ ! -f ~/.localCircleBuild ]]; then
   # Set -e is disabled momentarily to be able to output the error message to log.txt file.
   set +e
-  ./cc-test-reporter after-build -r $CC_TEST_REPORTER_ID --coverage-input-type gcov -p src --exit-code $? 2>&1 | tee exit_message.txt
+  ./cc-test-reporter after-build --coverage-input-type gcov -p src --exit-code $? 2>&1 | tee exit_message.txt
   result=$?
   set -e
   # Then we check the third line and see if it contains the known error message

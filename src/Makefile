@@ -43,8 +43,12 @@ socket.o: socket.c socket.h node.h
 # This rule handles modules buf, node, server and walloc.
 %.o: %.c %.h
 
-test: json_test
-	./json_test
+test: json_test node_test
+	./node_test && ./json_test
+
+node_test: node_test.o node.o walloc.o
+
+node_test.o: node_test.c node.h walloc.h
 
 json_test: json_test.o json.o node.o buf.o walloc.o
 

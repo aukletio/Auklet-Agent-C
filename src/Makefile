@@ -2,7 +2,8 @@ include config.mk
 
 SRC = buf.c server.c json.c node.c socket.c agent.c walloc.c
 OBJ = $(SRC:.c=.o)
-GCOV = $(SRC:.c=.gcda) $(SRC:.c=.gcno) $(SRC:.c=.c.gcov) json_test.gcda json_test.gcno
+TEST = json_test.c node_test.c
+GCOV = $(SRC:.c=.gcda) $(SRC:.c=.gcno) $(SRC:.c=.c.gcov) $(TEST:.c=.gcno) $(TEST:.c=.gcda)
 
 all: test install
 
@@ -40,11 +41,12 @@ json.o: json.c json.h node.h buf.h
 
 socket.o: socket.c socket.h node.h
 
-# This rule handles modules buf, node, server and walloc.
+# This rule handles modules buf, node, and server.
 %.o: %.c %.h
 
-test: json_test node_test
-	./node_test && ./json_test
+test: json_test #node_test
+	./json_test
+	#./node_test
 
 node_test: node_test.o node.o walloc.o
 
@@ -60,6 +62,6 @@ cover: test
 	gcov $(SRC)
 
 clean:
-	rm -f $(OBJ) $(GCOV) libauklet-internal.o libauklet.o libauklet.a libauklet.tgz internal-symbols.txt json_test json_test.o
+	rm -f $(OBJ) $(GCOV) libauklet-internal.o libauklet.o libauklet.a libauklet.tgz internal-symbols.txt json_test json_test.o node_test node_test.o
 
 .PHONY: install uninstall clean test cover

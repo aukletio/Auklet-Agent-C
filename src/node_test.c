@@ -21,8 +21,9 @@ oom(void *p, size_t size)
 int
 test_newNode()
 {
-	//walloc = oom;
+	walloc = oom;
 	Node *n = newNode(emptyFrame, NULL);
+	walloc = realloc;
 	return n != NULL;
 }
 
@@ -36,6 +37,7 @@ test_freeNode()
 int
 test_push()
 {
+	walloc = oom;
 	struct {
 		Node *n;
 		int expect;
@@ -58,29 +60,33 @@ test_push()
 			pass = 0;
 		}
 	}
+	walloc = realloc;
 	return pass;
 }
 
 int
 test_pop()
 {
+	walloc = realloc;
+	Node root = emptyNode;
 	struct {
 		Node *n;
 		int expect;
 	} cases[] = {
 		{
-			.n = newNode(emptyFrame, NULL),
-			.expect = 0,
+			.n = &root,
+			.expect = 0, /* no parent */
 		},
 		{
-			.n = newNode(emptyFrame, newNode(emptyFrame, NULL)),
+			.n = newNode(emptyFrame, newNode(emptyFrame, &root)),
 			.expect = 1,
 		},
 	};
 
 	int pass = 1;
 	for (int i = 0; i < len(cases); i++) {
-		int got = pop(&cases[i].n);
+		Node *n = cases[i].n;
+		int got = pop(&n);
 		if (got != cases[i].expect) {
 			printf("%s case %d: expected %d, got %d\n", __func__, i, cases[i].expect, got);
 			pass = 0;

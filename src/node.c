@@ -3,8 +3,8 @@
 
 #include "node.h"
 
-#include "walloc.h"
 #include <stdlib.h>
+#include "walloc.h"
 
 static int equal(Frame *a, Frame *b);
 static Node *get(Node *n, Frame *f);
@@ -56,9 +56,12 @@ push(Node **sp, Frame *f)
 int
 pop(Node **sp)
 {
-	if (!(*sp)->parent)
+	//if (!sp) return 0;
+	Node *n = *sp;
+	//if (!n) return 0;
+	if (!n->parent)
 		return 0;
-	*sp = (*sp)->parent;
+	*sp = n->parent;
 	return 1;
 }
 

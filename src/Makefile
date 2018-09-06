@@ -60,6 +60,7 @@ cover: CFLAGS += -fprofile-arcs -ftest-coverage
 cover: LDFLAGS += -fprofile-arcs -ftest-coverage
 cover: test
 	gcov $(SRC)
+	sed -i s,Source:,Source:src/, *.gcov
 
 clean:
 	rm -f $(OBJ) $(GCOV) libauklet-internal.o libauklet.o libauklet.a libauklet.tgz internal-symbols.txt json_test json_test.o node_test node_test.o

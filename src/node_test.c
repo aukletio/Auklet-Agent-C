@@ -18,13 +18,19 @@ oom(void *p, size_t size)
 	return NULL;
 }
 
+/* Tests return 1 for success, 0 for failure. */
+
 int
 test_newNode()
 {
 	walloc = oom;
 	Node *n = newNode(emptyFrame, NULL);
 	walloc = realloc;
-	return n != NULL;
+	if (n) {
+		printf("%s: expected NULL (out of memory), got %p\n", __func__, (void *)n);
+		return 0;
+	}
+	return 1;
 }
 
 int
@@ -78,8 +84,8 @@ test_pop()
 			.expect = 0, /* no parent */
 		},
 		{
-			.n = newNode(emptyFrame, newNode(emptyFrame, &root)),
-			.expect = 1,
+			.n = newNode(emptyFrame, &root),
+			.expect = 1, /* has parent */
 		},
 	};
 

@@ -23,7 +23,7 @@ make -C src cover
 if [[ ! -f ~/.localCircleBuild ]]; then
   # Set -e is disabled momentarily to be able to output the error message to log.txt file.
   set +e
-  ./cc-test-reporter after-build --coverage-input-type gcov -p $PWD/src --exit-code $? 2>&1 | tee exit_message.txt
+  ./cc-test-reporter after-build -d --coverage-input-type gcov -p $PWD/src --exit-code $? 2>&1 | tee exit_message.txt
   result=$?
   set -e
   # Then we check the third line and see if it contains the known error message

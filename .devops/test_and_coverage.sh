@@ -21,7 +21,7 @@ fi
 make -C src cover
 
 if [[ ! -f ~/.localCircleBuild ]]; then
-	./cc-test-reporter format-coverage -p src
+	./cc-test-reporter format-coverage src
   # Set -e is disabled momentarily to be able to output the error message to log.txt file.
   set +e
   ./cc-test-reporter upload-coverage 2>&1 | tee exit_message.txt

@@ -2,6 +2,8 @@ include config.mk
 
 SRC = buf.c server.c json.c node.c socket.c agent.c walloc.c
 OBJ = $(SRC:.c=.o)
+TEST = json_test.c node_test.c
+GCOV = $(SRC:.c=.gcda) $(SRC:.c=.gcno) $(SRC:.c=.c.gcov) $(TEST:.c=.gcno) $(TEST:.c=.gcda)
 
 all: test install
 
@@ -39,18 +41,28 @@ json.o: json.c json.h node.h buf.h
 
 socket.o: socket.c socket.h node.h
 
-# This rule handles modules buf, node, server and walloc.
+# This rule handles modules buf, node, and server.
 %.o: %.c %.h
 
-test: json_test
+test: json_test node_test
 	./json_test
+	./node_test
+
+node_test: node_test.o node.o walloc.o
+
+node_test.o: node_test.c node.h walloc.h
 
 json_test: json_test.o json.o node.o buf.o walloc.o
-	$(CC) -o $@ $^
 
 json_test.o: json_test.c json.h node.h buf.h
 
-clean:
-	rm -f $(OBJ) libauklet-internal.o libauklet.o libauklet.a libauklet.tgz internal-symbols.txt json_test json_test.o
+cover: CFLAGS += -fprofile-arcs -ftest-coverage
+cover: LDFLAGS += -fprofile-arcs -ftest-coverage
+cover: test
+	gcov $(SRC)
+	sed -i s,Source:,Source:src/, *.gcov
 
-.PHONY: install uninstall clean test
+clean:
+	rm -f $(OBJ) $(GCOV) libauklet-internal.o libauklet.o libauklet.a libauklet.tgz internal-symbols.txt json_test json_test.o node_test node_test.o
+
+.PHONY: install uninstall clean test cover

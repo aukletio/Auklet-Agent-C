@@ -45,27 +45,27 @@ test_append()
 	struct {
 		void *(*walloc)(void *p, size_t size);
 		char *arg;
-		int wc;
+		int err;
 	} cases[] = {
 		{
 			.walloc = realloc,
 			.arg = "",
-			.wc = 0,
+			.err = 0,
 		},
 		{
 			.walloc = realloc,
 			.arg = "_",
-			.wc = 1,
+			.err = 0,
 		},
 		{
 			.walloc = realloc,
 			.arg = "abcd",
-			.wc = 4,
+			.err = 0,
 		},
 		{
 			.walloc = oom,
 			.arg = "_",
-			.wc = -1,
+			.err = 1,
 		},
 	};
 
@@ -73,9 +73,9 @@ test_append()
 	for (int i = 0; i < len(cases); i++) {
 		walloc = cases[i].walloc;
 		int got = append(&emptyBuf, "%s", cases[i].arg);
-		if (got != cases[i].wc) {
+		if (got != cases[i].err) {
 			pass = 0;
-			printf("%s case %d: expected %d, got %d\n", __func__, i, cases[i].wc, got);
+			printf("%s case %d: expected %d, got %d\n", __func__, i, cases[i].err, got);
 		}
 	}
 	walloc = realloc;

@@ -12,11 +12,7 @@
 
 Frame *emptyFrame = &(Frame){.fn = 0, .cs = 0};
 
-void *
-oom(void *p, size_t size)
-{
-	return NULL;
-}
+void *oom(void *p, size_t size) { return NULL; }
 
 /* Tests return 1 for success, 0 for failure. */
 
@@ -48,14 +44,8 @@ test_push()
 		Node *n;
 		int expect;
 	} cases[] = {
-		{
-			.n = NULL,
-			.expect = 0,
-		},
-		{
-			.n = newNode(emptyFrame, NULL),
-			.expect = 0,
-		},
+		{.n = NULL,                      .expect = 0},
+		{.n = newNode(emptyFrame, NULL), .expect = 0},
 	};
 
 	int pass = 1;
@@ -79,14 +69,8 @@ test_pop()
 		Node *n;
 		int expect;
 	} cases[] = {
-		{
-			.n = &root,
-			.expect = 0, /* no parent */
-		},
-		{
-			.n = newNode(emptyFrame, &root),
-			.expect = 1, /* has parent */
-		},
+		{.n = &root,                      .expect = 0}, /* no parent */
+		{.n = newNode(emptyFrame, &root), .expect = 1}, /* has parent */
 	};
 
 	int pass = 1;

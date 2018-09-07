@@ -3,11 +3,7 @@
 
 #define len(x) (sizeof(x)/sizeof(x[0]))
 
-void *
-oom(void *p, size_t size)
-{
-	return NULL;
-}
+void *oom(void *p, size_t size) { return NULL; }
 
 int
 test_grow()
@@ -16,14 +12,8 @@ test_grow()
 		void *(*walloc)(void *p, size_t size);
 		int err;
 	} cases[] = {
-		{
-			.walloc = realloc,
-			.err = 0, // success
-		},
-		{
-			.walloc = oom,
-			.err = 1, // fail
-		},
+		{.walloc = realloc, .err = 0},
+		{.walloc = oom,     .err = 1},
 	};
 
 	int pass = 1;
@@ -47,26 +37,10 @@ test_append()
 		char *arg;
 		int err;
 	} cases[] = {
-		{
-			.walloc = realloc,
-			.arg = "",
-			.err = 0,
-		},
-		{
-			.walloc = realloc,
-			.arg = "_",
-			.err = 0,
-		},
-		{
-			.walloc = realloc,
-			.arg = "abcd",
-			.err = 0,
-		},
-		{
-			.walloc = oom,
-			.arg = "_",
-			.err = 1,
-		},
+		{.walloc = realloc, .arg = "",     .err = 0},
+		{.walloc = realloc, .arg = "_",    .err = 0},
+		{.walloc = realloc, .arg = "abcd", .err = 0},
+		{.walloc = oom,     .arg = "_",    .err = 1},
 	};
 
 	int pass = 1;

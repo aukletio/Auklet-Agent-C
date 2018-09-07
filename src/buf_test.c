@@ -1,0 +1,99 @@
+/* we need to test private functions, so we use source inclusion. */
+#include "buf.c"
+
+#define len(x) (sizeof(x)/sizeof(x[0]))
+
+void *
+oom(void *p, size_t size)
+{
+	return NULL;
+}
+
+int
+test_grow()
+{
+	struct {
+		void *(*walloc)(void *p, size_t size);
+		int err;
+	} cases[] = {
+		{
+			.walloc = realloc,
+			.err = 0, // success
+		},
+		{
+			.walloc = oom,
+			.err = 1, // fail
+		},
+	};
+
+	int pass = 1;
+	for (int i = 0; i < len(cases); i++) {
+		walloc = cases[i].walloc;
+		int got = grow(&emptyBuf);
+		if (got != cases[i].err) {
+			pass = 0;
+			printf("%s case %d: expected %d, got %d\n", __func__, i, cases[i].err, got);
+		}
+	}
+	walloc = realloc;
+	return pass;
+}
+
+int
+test_append()
+{
+	struct {
+		void *(*walloc)(void *p, size_t size);
+		char *arg;
+		int wc;
+	} cases[] = {
+		{
+			.walloc = realloc,
+			.arg = "",
+			.wc = 0,
+		},
+		{
+			.walloc = realloc,
+			.arg = "_",
+			.wc = 1,
+		},
+		{
+			.walloc = realloc,
+			.arg = "abcd",
+			.wc = 4,
+		},
+		{
+			.walloc = oom,
+			.arg = "_",
+			.wc = -1,
+		},
+	};
+
+	int pass = 1;
+	for (int i = 0; i < len(cases); i++) {
+		walloc = cases[i].walloc;
+		int got = append(&emptyBuf, "%s", cases[i].arg);
+		if (got != cases[i].wc) {
+			pass = 0;
+			printf("%s case %d: expected %d, got %d\n", __func__, i, cases[i].wc, got);
+		}
+	}
+	walloc = realloc;
+	return pass;
+}
+
+int
+main()
+{
+	int (*tests[])() = {
+		test_grow,
+		test_append,
+	};
+
+	int fails = 0;
+	for (int i = 0; i < len(tests); i++)
+		if (!tests[i]())
+			fails++;
+
+	return fails;
+}

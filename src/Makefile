@@ -2,7 +2,7 @@ include config.mk
 
 SRC = buf.c server.c json.c node.c socket.c agent.c walloc.c
 OBJ = $(SRC:.c=.o)
-TEST = json_test.c node_test.c
+TEST = json_test.c node_test.c buf_test.c
 GCOV = $(SRC:.c=.gcda) $(SRC:.c=.gcno) $(SRC:.c=.c.gcov) $(TEST:.c=.gcno) $(TEST:.c=.gcda)
 
 all: test install
@@ -41,12 +41,15 @@ json.o: json.c json.h node.h buf.h
 
 socket.o: socket.c socket.h node.h
 
+buf.o: buf.c buf.h walloc.h
+
 # This rule handles modules buf, node, server, and walloc.
 %.o: %.c %.h
 
-test: json_test node_test
+test: json_test node_test buf_test
 	./json_test
 	./node_test
+	./buf_test
 
 node_test: node_test.o node.o walloc.o
 
@@ -56,6 +59,10 @@ json_test: json_test.o json.o node.o buf.o walloc.o
 
 json_test.o: json_test.c json.h node.h buf.h
 
+buf_test: buf_test.o walloc.o
+
+buf_test.o: buf_test.c walloc.h
+
 cover: CFLAGS += -fprofile-arcs -ftest-coverage
 cover: LDFLAGS += -fprofile-arcs -ftest-coverage
 cover: test
@@ -63,6 +70,6 @@ cover: test
 	sed -i s,Source:,Source:src/, *.gcov
 
 clean:
-	rm -f $(OBJ) $(GCOV) libauklet-internal.o libauklet.o libauklet.a libauklet.tgz internal-symbols.txt json_test json_test.o node_test node_test.o
+	rm -f $(OBJ) $(GCOV) libauklet-internal.o libauklet.o libauklet.a libauklet.tgz internal-symbols.txt json_test json_test.o node_test node_test.o buf_test buf_test.o
 
 .PHONY: install uninstall clean test cover

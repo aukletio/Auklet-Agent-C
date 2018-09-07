@@ -1,21 +1,19 @@
 #include "buf.h"
 
+#include <stdlib.h>
+
+#include "walloc.h"
+
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <stdlib.h>
 
-static void grow(Buf *b);
-
-/* global variables */
-
-/* nomem is a jump point for recovering from memory allocation errors. */
-static jmp_buf nomem;
+static int grow(Buf *b);
 
 /* exported functions */
 
-/* append appends a formatted string to b and returns the number of characters
- * appended. If an error occurs, execution jumps to bufcatch. */
+/* append appends a formatted string to b. If an error occurs, 
+ * it returns 1; otherwise, 0. */
 int
 append(Buf *b, char *fmt, ...)
 {
@@ -25,33 +23,28 @@ retry:
 	va_start(ap, fmt);
 	wc = vsnprintf(b->buf + b->len, b->cap - b->len, fmt, ap);
 	if (wc >= b->cap - b->len) {
-		grow(b);
+		int err = grow(b);
+		if (err)
+			return 1;
 		goto retry;
 	}
 	va_end(ap);
 	b->len += wc;
-	return wc;
-}
-
-/* bufcatch sets a jump point for recovering from memory allocation errors. It
- * is only useful on systems that have disabled overcommit. */
-int
-bufcatch()
-{
-	return setjmp(nomem);
+	return 0;
 }
 
 /* private functions */
 
 /* grow increases b's capacity. If there is a memory allocation error, it
- * jumps to nomem. */
-void
+ * returns 1; otherwise, 0. */
+int
 grow(Buf *b)
 {
 	unsigned newcap = b->cap ? b->cap * 2 : 32;
-	char *c = realloc(b->buf, newcap * sizeof(char));
+	char *c = walloc(b->buf, newcap * sizeof(char));
 	if (!c)
-		longjmp(nomem, 1);
+		return 1;
 	b->buf = c;
 	b->cap = newcap;
+	return 0;
 }

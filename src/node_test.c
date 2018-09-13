@@ -1,12 +1,9 @@
+#include "node.c"
+
 #include <stdlib.h>
-#include "walloc.h"
-
-#include <stdint.h>
-#include <pthread.h>
-
-#include "node.h"
-
 #include <stdio.h>
+
+#include "walloc.h"
 
 #define len(x) (sizeof(x)/sizeof(x[0]))
 

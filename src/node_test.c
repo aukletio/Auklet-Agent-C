@@ -83,6 +83,31 @@ test_pop()
 }
 
 int
+test_sample()
+{
+	Node n = (Node)emptyNode;
+	sample(&n);
+	return n.nsamp == 1;
+}
+
+int
+test_equal()
+{
+	return equal(emptyFrame, emptyFrame);
+}
+
+int
+test_clearcounters()
+{
+	Node root = emptyNode;
+	Node *sp = &root;
+	push(&sp, emptyFrame);
+	sample(sp);
+	clearcounters(&root);
+	return !root.nsamp && !root.ncall;
+}
+
+int
 main()
 {
 	int (*tests[])() = {
@@ -90,6 +115,9 @@ main()
 		test_freeNode,
 		test_push,
 		test_pop,
+		test_sample,
+		test_equal,
+		test_clearcounters,
 	};
 
 	int fails = 0;

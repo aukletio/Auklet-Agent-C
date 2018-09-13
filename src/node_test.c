@@ -30,21 +30,22 @@ int
 test_freeNode()
 {
 	freeNode(NULL, 0);
+	freeNode(newNode(emptyFrame, NULL), 0);
 	return 1;
 }
 
 int
 test_push()
 {
-	walloc = oom;
 	struct {
 		Node *n;
 		int expect;
 	} cases[] = {
 		{.n = NULL,                      .expect = 0},
-		{.n = newNode(emptyFrame, NULL), .expect = 0},
+		{.n = newNode(emptyFrame, NULL), .expect = 1},
 	};
 
+	walloc = realloc;
 	int pass = 1;
 	for (int i = 0; i < len(cases); i++) {
 		int got = push(&cases[i].n, emptyFrame);
@@ -53,7 +54,6 @@ test_push()
 			pass = 0;
 		}
 	}
-	walloc = realloc;
 	return pass;
 }
 

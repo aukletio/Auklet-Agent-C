@@ -18,7 +18,7 @@ if [[ ! -f ~/.localCircleBuild ]]; then
   ./cc-test-reporter before-build
 fi
 
-make -C src cover
+make -C src test
 
 if [[ ! -f ~/.localCircleBuild ]]; then
 	./cc-test-reporter format-coverage --input-type gcov src/

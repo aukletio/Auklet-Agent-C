@@ -91,6 +91,7 @@ lib_test
 src/internal-symbols.txt
 src/json_test
 src/node_test
+src/buf_test
 src/*.c.gcov
 src/*.gcno
 src/*.gcda

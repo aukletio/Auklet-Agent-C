@@ -1,11 +1,8 @@
 include config.mk
 
-SRC = buf.c server.c json.c node.c socket.c agent.c walloc.c
-OBJ = $(SRC:.c=.o)
-TEST = json_test.c node_test.c
-GCOV = $(SRC:.c=.gcda) $(SRC:.c=.gcno) $(SRC:.c=.c.gcov) $(TEST:.c=.gcno) $(TEST:.c=.gcda)
-
 all: test install
+
+$(eval $(moduleRules))
 
 install: libauklet.a
 	sudo cp $< $(INSTALL)/$<
@@ -34,35 +31,31 @@ internal-symbols.txt: libauklet-internal.o
 libauklet-internal.o: $(OBJ)
 	$(LD) -r $^ -o $@
 
-agent.o: CFLAGS += -DAUKLET_VERSION=\"$$(cat ../VERSION)\" -DAUKLET_TIMESTAMP=\"${TIMESTAMP}\"
-agent.o: agent.c server.h node.h socket.h buf.h json.h
+test: $(TEST:=_test)
+	$(foreach t,$(TEST),$(call writeTest,$t))
 
-json.o: json.c json.h node.h buf.h
-
-socket.o: socket.c socket.h node.h
-
-# This rule handles modules buf, node, and server.
-%.o: %.c %.h
-
-test: json_test node_test
-	./json_test
-	./node_test
-
-node_test: node_test.o node.o walloc.o
+node_test: node_test.o walloc.o
+	$(linkWithCoverage)
 
 node_test.o: node_test.c node.h walloc.h
+	$(compileWithCoverage)
 
-json_test: json_test.o json.o node.o buf.o walloc.o
+json_test: json_test.o node.o buf.o walloc.o
+	$(linkWithCoverage)
 
 json_test.o: json_test.c json.h node.h buf.h
+	$(compileWithCoverage)
 
-cover: CFLAGS += -fprofile-arcs -ftest-coverage
-cover: LDFLAGS += -fprofile-arcs -ftest-coverage
-cover: test
-	gcov $(SRC)
-	sed -i s,Source:,Source:src/, *.gcov
+buf_test: buf_test.o walloc.o
+	$(linkWithCoverage)
+
+buf_test.o: buf_test.c walloc.h
+	$(compileWithCoverage)
 
 clean:
-	rm -f $(OBJ) $(GCOV) libauklet-internal.o libauklet.o libauklet.a libauklet.tgz internal-symbols.txt json_test json_test.o node_test node_test.o
+	@rm -f $(OBJ)
+	@rm -f $(TEST:=_test) $(TEST:=_test.o)
+	@rm -f libauklet-internal.o libauklet.o libauklet.a libauklet.tgz internal-symbols.txt
+	@rm -f $(GCOV)
 
-.PHONY: install uninstall clean test cover
+.PHONY: install uninstall clean test

@@ -1,22 +1,15 @@
+#include "node.c"
+
 #include <stdlib.h>
-#include "walloc.h"
-
-#include <stdint.h>
-#include <pthread.h>
-
-#include "node.h"
-
 #include <stdio.h>
+
+#include "walloc.h"
 
 #define len(x) (sizeof(x)/sizeof(x[0]))
 
 Frame *emptyFrame = &(Frame){.fn = 0, .cs = 0};
 
-void *
-oom(void *p, size_t size)
-{
-	return NULL;
-}
+void *oom(void *p, size_t size) { return NULL; }
 
 /* Tests return 1 for success, 0 for failure. */
 
@@ -37,27 +30,22 @@ int
 test_freeNode()
 {
 	freeNode(NULL, 0);
+	freeNode(newNode(emptyFrame, NULL), 0);
 	return 1;
 }
 
 int
 test_push()
 {
-	walloc = oom;
 	struct {
 		Node *n;
 		int expect;
 	} cases[] = {
-		{
-			.n = NULL,
-			.expect = 0,
-		},
-		{
-			.n = newNode(emptyFrame, NULL),
-			.expect = 0,
-		},
+		{.n = NULL,                      .expect = 0},
+		{.n = newNode(emptyFrame, NULL), .expect = 1},
 	};
 
+	walloc = realloc;
 	int pass = 1;
 	for (int i = 0; i < len(cases); i++) {
 		int got = push(&cases[i].n, emptyFrame);
@@ -66,7 +54,6 @@ test_push()
 			pass = 0;
 		}
 	}
-	walloc = realloc;
 	return pass;
 }
 
@@ -79,14 +66,8 @@ test_pop()
 		Node *n;
 		int expect;
 	} cases[] = {
-		{
-			.n = &root,
-			.expect = 0, /* no parent */
-		},
-		{
-			.n = newNode(emptyFrame, &root),
-			.expect = 1, /* has parent */
-		},
+		{.n = &root,                      .expect = 0}, /* no parent */
+		{.n = newNode(emptyFrame, &root), .expect = 1}, /* has parent */
 	};
 
 	int pass = 1;
@@ -102,6 +83,31 @@ test_pop()
 }
 
 int
+test_sample()
+{
+	Node n = (Node)emptyNode;
+	sample(&n);
+	return n.nsamp == 1;
+}
+
+int
+test_equal()
+{
+	return equal(emptyFrame, emptyFrame);
+}
+
+int
+test_clearcounters()
+{
+	Node root = emptyNode;
+	Node *sp = &root;
+	push(&sp, emptyFrame);
+	sample(sp);
+	clearcounters(&root);
+	return !root.nsamp && !root.ncall;
+}
+
+int
 main()
 {
 	int (*tests[])() = {
@@ -109,6 +115,9 @@ main()
 		test_freeNode,
 		test_push,
 		test_pop,
+		test_sample,
+		test_equal,
+		test_clearcounters,
 	};
 
 	int fails = 0;

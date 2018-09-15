@@ -1,5 +1,16 @@
 # Changelog
 
+## Merged But Unreleased
+
+**Implemented enhancements:**
+
+- APM-1414 C/C++ Agent ASIL B Compliance [#126](https://github.com/ESG-USA/Auklet-Agent-C/pull/126) ([kdsch](https://github.com/kdsch))
+- APM-1414 C/C++ Agent ASIL B Compliance [#125](https://github.com/ESG-USA/Auklet-Agent-C/pull/125) ([kdsch](https://github.com/kdsch))
+
+**DevOps changes:**
+
+- APM-1414: .circleci: add test coverage [#124](https://github.com/ESG-USA/Auklet-Agent-C/pull/124) ([kdsch](https://github.com/kdsch))
+
 ## [0.10.0](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.10.0)
 
 **Implemented enhancements:**

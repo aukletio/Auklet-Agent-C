@@ -3,5 +3,6 @@
 
 /* needs stdlib.h */
 
-void *walloc(void *p, size_t size);
-void injectfaults(double rate);
+/* walloc is initialized to libc's realloc, but declared
+ * so that we can mock it during tests. */
+void *(*walloc)(void *p, size_t size);

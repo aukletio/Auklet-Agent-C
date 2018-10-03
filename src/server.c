@@ -1,55 +1,55 @@
+#include <pthread.h>
 #include "server.h"
 
-#include <pthread.h>
 #include <signal.h>
 #include <unistd.h>
 
 static void *handlerthread(void *p);
 
-/* global variables */
-
-static void (*reqhandler)() = NULL;
-static int sockfd;
-
 /* exported functions */
 
 void
-startserver(int fd, void (*handler)())
+start(Server *s)
 {
-	pthread_t t;
-	sockfd = fd;
-	reqhandler = handler;
-	pthread_create(&t, NULL, handlerthread, NULL);
+	pthread_create(&s->t, NULL, handlerthread, s);
 }
 
 void
-stopserver()
+stop(Server *s)
 {
-	reqhandler = NULL;
+	s->handler = NULL;
 }
 
 /* private functions */
 
-/* handlerthread handles emission requests by calling reqhandler. */
+/* blocksigs blocks all signals, preventing the calling thread
+ * from being profiled. */
+void
+blocksigs()
+{
+	sigset_t s;
+	sigfillset(&s);
+	pthread_sigmask(SIG_BLOCK, &s, NULL);
+}
+
+/* handlerthread handles emission requests by calling s->handler. */
 void *
 handlerthread(void *p)
 {
+	Server *s = (Server *)p;
 	char buf;
 	size_t rc;
-	sigset_t s;
-	sigfillset(&s);
-	/* We block all signals to prevent this thread from getting profiled. */
-	pthread_sigmask(SIG_BLOCK, &s, NULL);
+
+	blocksigs();
 	while (1) {
-		rc = read(sockfd, &buf, sizeof(buf));
+		rc = read(s->fd, &buf, sizeof(buf));
 		if (rc == -1) {
-			/* read failure. */
-			continue;
+			/* read failure. Assume the client has exited. */
+			break;
 		}
-		if (!reqhandler)
+		if (!s->handler)
 			return NULL;
-		/* This function can safely use mutexes. */
-		reqhandler();
+		s->handler();
 	}
 	return NULL;
 }

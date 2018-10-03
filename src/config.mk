@@ -16,7 +16,7 @@ TIMESTAMP ?= 'no timestamp'
 MOD = buf server json node socket agent walloc
 SRC = $(MOD:=.c)
 OBJ = $(MOD:=.o)
-TEST = buf json node
+TEST = buf json node server
 GCOV = $(MOD:=.c.gcov) $(TEST:=_test.gcno) $(TEST:=_test.gcda)
 
 # utility functions

@@ -52,7 +52,7 @@ buf_test: buf_test.o walloc.o
 buf_test.o: buf_test.c walloc.h
 	$(compileWithCoverage)
 
-server_test: server_test.o
+server_test: server_test.o walloc.o
 	$(linkWithCoverage) -lpthread
 
 server_test.o: server_test.c server.h

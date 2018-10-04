@@ -1,23 +1,52 @@
 #include <pthread.h>
 #include "server.h"
 
+#include <errno.h>
 #include <signal.h>
+#include <stdlib.h>
 #include <unistd.h>
 
+#include "walloc.h"
+
+struct Server {
+	int fd;            /* incoming requests */
+	void (*handler)(); /* request handler */
+
+	/* internal use */
+	pthread_t t;
+};
+
 static void *handlerthread(void *p);
+static void blocksigs();
 
 /* exported functions */
 
-void
-start(Server *s)
+Server *
+newServer(int fd, void (*handler)())
 {
-	pthread_create(&s->t, NULL, handlerthread, s);
+	Server *s = walloc(NULL, sizeof(Server));
+	if (!s)
+		return NULL;
+	*s = (Server){
+		.fd = fd,
+		.handler = handler,
+	};
+	return s;
 }
 
-void
-stop(Server *s)
+int
+start(Server *s)
 {
-	s->handler = NULL;
+	return pthread_create(&s->t, NULL, handlerthread, s);
+}
+
+int
+wait(Server *s, int kill)
+{
+	if (kill)
+		pthread_kill(s->t, SIGKILL);
+
+	return pthread_join(s->t, NULL);
 }
 
 /* private functions */
@@ -43,12 +72,10 @@ handlerthread(void *p)
 	blocksigs();
 	while (1) {
 		rc = read(s->fd, &buf, sizeof(buf));
-		if (rc == -1) {
-			/* read failure. Assume the client has exited. */
-			break;
-		}
-		if (!s->handler)
+		if (0 == rc)
+			/* The stream has ended. */
 			return NULL;
+
 		s->handler();
 	}
 	return NULL;

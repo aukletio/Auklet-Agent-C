@@ -51,7 +51,7 @@ static __thread Node *sp = &root;
 static int sockfd = 0;
 
 /* server responds to emission requests received from the client. */
-static Server server;
+static Server *server;
 
 /* agentstate allows us to enable or disable the effects of instrumentation,
  * even though there is no way to prevent the instrument functions from being
@@ -137,10 +137,10 @@ setagentstate(int state)
 		siginstall(SIGILL, sigerr);
 		siginstall(SIGFPE, sigerr);
 		setitimer(ITIMER_PROF, &sigproftimer, NULL);
-		start(&server);
+		start(server);
 		break;
 	case OFF:
-		stop(&server);
+		wait(server, 1);
 		setitimer(ITIMER_PROF, &stopinterval, NULL);
 		siginstall(SIGPROF, SIG_DFL);
 		siginstall(SIGSEGV, SIG_DFL);
@@ -156,7 +156,7 @@ void
 setup()
 {
 	sockfd = connecttoclient();
-	server = (Server){ .fd = sockfd, .handler = profilehandler };
+	server = newServer(sockfd, profilehandler);
 	dprintf(sockfd, "{\"version\":\"%s %s\"}", AUKLET_VERSION, AUKLET_TIMESTAMP);
 	setagentstate(ON);
 }
@@ -168,5 +168,6 @@ cleanup()
 	profilehandler();
 	setagentstate(OFF);
 	freeNode(&root, 1);
+	free(server);
 	close(sockfd);
 }

@@ -12,34 +12,35 @@ void handler() { count++; }
 int
 test_server()
 {
+	int ret = 1;
 	int fd[2];
+	char buf = '@';
+
 	if (socketpair(AF_UNIX, SOCK_STREAM, 0, fd) == -1) {
 		perror("socketpair");
 		return 0;
 	}
 	
-	Server server = {
-		.fd = fd[0],
-		.handler = handler,
-	};
-	start(&server);
+	Server *server = newServer(fd[0], handler);
+	start(server);
 	for (int i = 0; i < 42; i++) {
-		char buf;
 		if (write(fd[1], &buf, sizeof(buf)) == -1) {
 			perror("write");
-			return 0;
+			ret = 0;
+			goto cleanup;
 		}
 	}
-	/* This is a hack to make sure all of the bytes are received by the 
-	 * time this thread tries to check the count. The correct way would
-	 * involve some kind of inter-thread synchronization. */
-	sleep(1);
-	stop(&server);
+	close(fd[1]);
+	wait(server, 0);
 	if (count != 42) {
 		printf("request count: expected %d, got %d\n", 42, count);
-		return 0;
+		ret = 0;
+		goto cleanup;
 	}
-	return 1;
+
+cleanup:
+	free(server);
+	return ret;
 }
 
 int

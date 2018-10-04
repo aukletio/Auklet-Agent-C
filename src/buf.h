@@ -12,4 +12,3 @@ typedef struct {
 }
 
 int append(Buf *b, char *fmt, ...);
-int bufcatch();

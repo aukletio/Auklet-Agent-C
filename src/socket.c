@@ -1,12 +1,9 @@
 #include <stdint.h>
 #include <pthread.h>
 
-#include "node.h"
-
 #include "socket.h"
 
 #include "buf.h"
-#include "json.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -24,15 +21,17 @@ static char *loglevel[] = {
 
 /* exported functions */
 
-/* connecttoclient connects to the socket provided by an Auklet client and
- * returns 1 if the connection succeeded, othwerise 0. */
+/* connecttoclient connects to the socket provided by
+ * an Auklet client and returns a valid file descriptor
+ * if the connection succeeded, othwerise -1. */
 int
 connecttoclient()
 {
 	int fd = 4;
 	struct stat buf;
+
 	if (-1 == fstat(fd, &buf))
-		return 0;
+		return -1;
 	return fd;
 }
 
@@ -42,6 +41,7 @@ logprint(int fd, int level, char *fmt, ...)
 	Buf b = emptyBuf;
 	int ret;
 	va_list ap;
+
 	append(&b, "{"
 		"\"type\":\"log\","
 		"\"data\":{"
@@ -53,27 +53,4 @@ logprint(int fd, int level, char *fmt, ...)
 	va_end(ap);
 	free(b.buf);
 	return ret;
-}
-
-void
-sendstacktrace(int fd, Node *sp, int sig)
-{
-	Buf b = emptyBuf;
-	append(&b, "{\"type\":\"event\",\"data\":");
-	marshalstack(&b, sp, sig);
-	append(&b, "}\n");
-	write(fd, b.buf, b.len);
-	free(b.buf);
-}
-
-void
-sendprofile(int fd, Node *root)
-{
-	Buf b = emptyBuf;
-	append(&b, "{\"type\":\"profile\",\"data\":{\"tree\":");
-	marshaltree(&b, root);
-	append(&b, "}}\n");
-	if (-1 != write(fd, b.buf, b.len))
-		clearcounters(root);
-	free(b.buf);
 }

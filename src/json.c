@@ -2,8 +2,8 @@
 #include <string.h>
 #include <pthread.h>
 
-#include "node.h"
 #include "buf.h"
+#include "node.h"
 
 #include "json.h"
 

@@ -4,6 +4,7 @@
 #include "server.h"
 
 #include <stdint.h>
+#include "buf.h"
 #include "node.h"
 
 #include "socket.h"
@@ -11,7 +12,6 @@
 #include <unistd.h>
 #include <signal.h>
 
-#include "buf.h"
 #include "json.h"
 
 #include <stdlib.h>
@@ -97,7 +97,7 @@ void
 sigerr(int n)
 {
 	profilehandler();
-	sendstacktrace(sockfd, sp, n);
+	sendstacktrace(sockfd, sp, n, marshalstack);
 	_exit(1);
 }
 
@@ -106,7 +106,7 @@ sigerr(int n)
 void
 profilehandler()
 {
-	sendprofile(sockfd, &root);
+	sendprofile(sockfd, &root, marshaltree);
 }
 
 /* siginstall installs handler as the signal handler for sig. */
@@ -155,7 +155,13 @@ setagentstate(int state)
 void
 setup()
 {
-	sockfd = connecttoclient();
+	int fd = connecttoclient();
+	if (-1 == fd)
+		/* We have no data connection. Dump to stdout. */
+		sockfd = 0;
+	else
+		sockfd = fd;
+
 	server = newServer(sockfd, profilehandler);
 	dprintf(sockfd, "{\"version\":\"%s %s\"}", AUKLET_VERSION, AUKLET_TIMESTAMP);
 	setagentstate(ON);

@@ -4,12 +4,15 @@
 #include <errno.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "walloc.h"
 
+#include "socket.h"
+
 struct Server {
-	int fd;            /* incoming requests */
+	int fd;            /* incoming requests, outgoing logs */
 	void (*handler)(); /* request handler */
 
 	/* internal use */
@@ -44,6 +47,7 @@ int
 wait(Server *s, int kill)
 {
 	if (kill)
+		/* SIGKILL is a valid signal, so we ignore the return value */
 		pthread_kill(s->t, SIGKILL);
 
 	return pthread_join(s->t, NULL);
@@ -72,11 +76,18 @@ handlerthread(void *p)
 	blocksigs();
 	while (1) {
 		rc = read(s->fd, &buf, sizeof(buf));
-		if (0 == rc)
-			/* The stream has ended. */
+		switch (rc) {
+		case 0: /* EOF */
 			return NULL;
-
-		s->handler();
+		case 1: /* ok */
+			s->handler();
+			break;
+		case -1: /* error */
+			logprint(s->fd, INFO, "handlerthread: read: %s", strerror(errno));
+			break;
+		default: /* should be impossible */
+			logprint(s->fd, INFO, "handlerthread: read %d bytes", rc);
+		}
 	}
 	return NULL;
 }

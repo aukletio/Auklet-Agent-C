@@ -3,80 +3,135 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct {
-	const char *name;
-	Node *node;
-	char *want;
-	Buf got;
-} Case;
+Frame *emptyFrame = &(Frame){.fn = 0, .cs = 0};
 
-void
-marshaltree_case0(Case *c)
+int differ(char *a, char *b);
+
+Node *
+sampledNode()
 {
-	*c = (Case){
-		.name = __func__,
-		.node = newNode(&(Frame){0, 0}, NULL),
-		.want = NULL,
-	};
-	marshaltree(&c->got, c->node);
+	Node *n = newNode(emptyFrame, 0);
+	sample(n);
+	return n;
 }
 
-void
-marshaltree_case1(Case *c)
+Node *
+stackedNodes()
 {
-	*c = (Case){
-		.name = __func__,
-		.node = newNode(&(Frame){0, 0}, NULL),
-		.want = "{"
-			"\"nSamples\":1,"
-			"\"callees\":[]"
-		"}",
-	};
-	sample(c->node);
-	marshaltree(&c->got, c->node);
-}
-
-void
-marshaltree_case2(Case *c)
-{
-	*c = (Case){
-		.name = __func__,
-		.node = newNode(&(Frame){0, 0}, NULL),
-		.want = "{"
-			"\"callees\":["
-				"{"
-					"\"nCalls\":1,"
-					"\"callees\":[]"
-				"}"
-			"]"
-		"}",
-	};
-	Node *sp = c->node;
-	push(&sp, &(Frame){0, 0});
-	marshaltree(&c->got, c->node);
-}
-
-void
-marshalstack_case0(Case *c)
-{
-	*c = (Case){
-		.name = __func__,
-		.node = newNode(&(Frame){0, 0}, NULL),
-		.want = "{"
-			"\"signal\":\"Unknown signal 0\","
-			"\"stackTrace\":["
-				"{"
-					"\"functionAddress\":0,"
-					"\"callSiteAddress\":0"
-				"}"
-			"]"
-		"}",
-	};
-	marshalstack(&c->got, c->node, 0);
+	Node *n = newNode(emptyFrame, NULL);
+	Node *sp = n;
+	push(&sp, emptyFrame);
+	return n;
 }
 
 int
-compare(char *a, char *b)
+test_marshaltree()
+{
+	int pass = 1;
+	int err;
+	Buf got;
+
+	struct {
+		Node *node;
+		char *want;
+	} cases[] = {
+		{
+			.node = newNode(emptyFrame, NULL),
+			.want = NULL,
+		},
+		{
+			.node = sampledNode(),
+			.want = "{"
+				"\"nSamples\":1,"
+				"\"callees\":[]"
+			"}",
+		},
+		{
+			.node = stackedNodes(),
+			.want = "{"
+				"\"callees\":["
+					"{"
+						"\"nCalls\":1,"
+						"\"callees\":[]"
+					"}"
+				"]"
+			"}",
+		},
+	};
+
+	for (int i = 0; i < len(cases); i++) {
+		got = emptyBuf;
+
+		err = marshaltree(&got, cases[i].node);
+		if (err) {
+			pass = 0;
+			printf("%s case %d: error: %d\n", __func__, i, err);
+		}
+
+		if (differ(cases[i].want, got.buf)) {
+			pass = 0;
+			printf("%s case %d:\n"
+			       "  wanted %s\n"
+			       "  got    %s\n", __func__, i, cases[i].want, got.buf);
+		}
+
+		freeNode(cases[i].node, 0);
+		free(got.buf);
+	}
+
+	return pass;
+}
+
+int
+test_marshalstack()
+{
+	int pass = 1;
+	int err;
+	Buf got;
+
+	struct {
+		Node *node;
+		char *want;
+	} cases[] = {
+		{
+			.node = newNode(emptyFrame, NULL),
+			.want = "{"
+				"\"signal\":\"Unknown signal 0\","
+				"\"stackTrace\":["
+					"{"
+						"\"functionAddress\":0,"
+						"\"callSiteAddress\":0"
+					"}"
+				"]"
+			"}",
+		},
+	};
+
+	for (int i = 0; i < len(cases); i++) {
+		got = emptyBuf;
+
+		err = marshalstack(&got, cases[i].node, 0);
+		if (err) {
+			pass = 0;
+			printf("%s case %d: error: %d\n", __func__, i, err);
+		}
+
+		if (differ(cases[i].want, got.buf)) {
+			pass = 0;
+			printf("%s case %d:\n"
+			       "  wanted %s\n"
+			       "  got    %s\n", __func__, i, cases[i].want, got.buf);
+		}
+
+		freeNode(cases[i].node, 0);
+		free(got.buf);
+	}
+
+	return pass;
+}
+
+int
+differ(char *a, char *b)
 {
 	if (!a && !b) {
 		/* two null strings are equal. */
@@ -87,30 +142,19 @@ compare(char *a, char *b)
 	}
 	return strcmp(a, b);
 }
-	
+
 int
 main()
 {
-	void (*test[])(Case *) = {
-		marshaltree_case0,
-		marshaltree_case1,
-		marshaltree_case2,
-		marshalstack_case0,
+	int fails = 0;
+	int (*tests[])() = {
+		test_marshaltree,
+		test_marshalstack,
 	};
-	int ret = 0;
-	Case k;
-	for (int i = 0; i < len(test); ++i) {
-		k.got = emptyBuf;
-		test[i](&k);
-		int fail = compare(k.want, k.got.buf);
-		printf("%d/%lu %s %s\n", i+1, len(test), fail ? "fail" : "pass", k.name);
-		if (fail) {
-			ret = 1;
-			printf("wanted %s\n"
-			       "got    %s\n", k.want, k.got.buf);
-		}
-		freeNode(k.node, 0);
-		free(k.got.buf);
-	}
-	return ret;
+
+	for (int i = 0; i< len(tests); i++)
+		if (!tests[i]())
+			fails++;
+
+	return fails;
 }

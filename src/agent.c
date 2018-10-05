@@ -10,6 +10,7 @@
 
 #include <unistd.h>
 #include <signal.h>
+#include "buf.h"
 
 #include "json.h"
 
@@ -95,8 +96,10 @@ sigprof(int n)
 void
 sigerr(int n)
 {
+	Buf b = emptyBuf(realloc, free);
 	profilehandler();
-	sendstacktrace(sockfd, sp, n);
+	sendstacktrace(&b, sockfd, sp, n);
+	b.free(b.buf);
 	_exit(1);
 }
 
@@ -105,7 +108,9 @@ sigerr(int n)
 void
 profilehandler()
 {
-	sendprofile(sockfd, &root);
+	Buf b = emptyBuf(realloc, free);
+	sendprofile(&b, sockfd, &root);
+	b.free(b.buf);
 }
 
 /* siginstall installs handler as the signal handler for sig. */

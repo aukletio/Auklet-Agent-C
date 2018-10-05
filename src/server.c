@@ -69,7 +69,7 @@ blocksigs()
 void *
 handlerthread(void *p)
 {
-	Server *s = (Server *)p;
+	Server *s = p;
 	char buf;
 	size_t rc;
 

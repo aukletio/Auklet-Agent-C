@@ -34,7 +34,7 @@ test_marshaltree()
 	struct {
 		Node *node;
 		char *want;
-	} cases[] = {
+	} c, cases[] = {
 		{
 			.node = newNode(emptyFrame, NULL),
 			.want = NULL,
@@ -60,23 +60,24 @@ test_marshaltree()
 	};
 
 	for (int i = 0; i < len(cases); i++) {
-		got = emptyBuf;
+		c = cases[i];
+		got = emptyBuf(realloc, free);
 
-		err = marshaltree(&got, cases[i].node);
+		err = marshaltree(&got, c.node);
 		if (err) {
 			pass = 0;
 			printf("%s case %d: error: %d\n", __func__, i, err);
 		}
 
-		if (differ(cases[i].want, got.buf)) {
+		if (differ(c.want, got.buf)) {
 			pass = 0;
 			printf("%s case %d:\n"
 			       "  wanted %s\n"
-			       "  got    %s\n", __func__, i, cases[i].want, got.buf);
+			       "  got    %s\n", __func__, i, c.want, got.buf);
 		}
 
-		freeNode(cases[i].node, 0);
-		free(got.buf);
+		freeNode(c.node, 0);
+		got.free(got.buf);
 	}
 
 	return pass;
@@ -92,7 +93,7 @@ test_marshalstack()
 	struct {
 		Node *node;
 		char *want;
-	} cases[] = {
+	} c, cases[] = {
 		{
 			.node = newNode(emptyFrame, NULL),
 			.want = "{"
@@ -108,23 +109,24 @@ test_marshalstack()
 	};
 
 	for (int i = 0; i < len(cases); i++) {
-		got = emptyBuf;
+		c = cases[i];
+		got = emptyBuf(realloc, free);
 
-		err = marshalstack(&got, cases[i].node, 0);
+		err = marshalstack(&got, c.node, 0);
 		if (err) {
 			pass = 0;
 			printf("%s case %d: error: %d\n", __func__, i, err);
 		}
 
-		if (differ(cases[i].want, got.buf)) {
+		if (differ(c.want, got.buf)) {
 			pass = 0;
 			printf("%s case %d:\n"
 			       "  wanted %s\n"
-			       "  got    %s\n", __func__, i, cases[i].want, got.buf);
+			       "  got    %s\n", __func__, i, c.want, got.buf);
 		}
 
-		freeNode(cases[i].node, 0);
-		free(got.buf);
+		freeNode(c.node, 0);
+		got.free(got.buf);
 	}
 
 	return pass;

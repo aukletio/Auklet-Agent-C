@@ -35,7 +35,7 @@ connecttoclient()
 int
 logprint(int fd, int level, char *fmt, ...)
 {
-	Buf b = emptyBuf;
+	Buf b = emptyBuf(realloc, free);
 	int ret;
 	va_list ap;
 
@@ -48,6 +48,6 @@ logprint(int fd, int level, char *fmt, ...)
 	va_start(ap, fmt);
 	ret = vdprintf(fd, b.buf, ap);
 	va_end(ap);
-	free(b.buf);
+	b.free(b.buf);
 	return ret;
 }

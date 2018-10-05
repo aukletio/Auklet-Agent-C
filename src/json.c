@@ -31,26 +31,22 @@ static int markemptycallees(Node *n);
 /* exported functions */
 
 void
-sendstacktrace(int fd, Node *sp, int sig)
+sendstacktrace(Buf *b, int fd, Node *sp, int sig)
 {
-	Buf b = emptyBuf;
-	append(&b, "{\"type\":\"event\",\"data\":");
-	marshalstack(&b, sp, sig);
-	append(&b, "}\n");
-	write(fd, b.buf, b.len);
-	free(b.buf);
+	append(b, "{\"type\":\"event\",\"data\":");
+	marshalstack(b, sp, sig);
+	append(b, "}\n");
+	write(fd, b->buf, b->len);
 }
 
 void
-sendprofile(int fd, Node *root)
+sendprofile(Buf *b, int fd, Node *root)
 {
-	Buf b = emptyBuf;
-	append(&b, "{\"type\":\"profile\",\"data\":{\"tree\":");
-	marshaltree(&b, root);
-	append(&b, "}}\n");
-	if (-1 != write(fd, b.buf, b.len))
+	append(b, "{\"type\":\"profile\",\"data\":{\"tree\":");
+	marshaltree(b, root);
+	append(b, "}}\n");
+	if (-1 != write(fd, b->buf, b->len))
 		clearcounters(root);
-	free(b.buf);
 }
 
 /* private functions */

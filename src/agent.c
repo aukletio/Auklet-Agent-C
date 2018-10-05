@@ -4,7 +4,6 @@
 #include "server.h"
 
 #include <stdint.h>
-#include "buf.h"
 #include "node.h"
 
 #include "socket.h"
@@ -97,7 +96,7 @@ void
 sigerr(int n)
 {
 	profilehandler();
-	sendstacktrace(sockfd, sp, n, marshalstack);
+	sendstacktrace(sockfd, sp, n);
 	_exit(1);
 }
 
@@ -106,7 +105,7 @@ sigerr(int n)
 void
 profilehandler()
 {
-	sendprofile(sockfd, &root, marshaltree);
+	sendprofile(sockfd, &root);
 }
 
 /* siginstall installs handler as the signal handler for sig. */

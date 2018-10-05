@@ -1,4 +1,3 @@
-#include "buf.h"
 #include <stdint.h>
 #include <pthread.h>
 
@@ -6,8 +5,6 @@
 
 #include <stdlib.h>
 #include "walloc.h"
-
-#include <unistd.h>
 
 static int equal(Frame *a, Frame *b);
 static Node *get(Node *n, Frame *f);
@@ -140,36 +137,4 @@ clearcounters(Node *n)
 	n->ncall = 0;
 	for (int i = 0; i < n->len; ++i)
 		clearcounters(n->callee[i]);
-}
-
-void
-sendstacktrace(
-	int fd,
-	Node *sp,
-	int sig,
-	int (*marshal)(Buf *, Node *, int)
-)
-{
-	Buf b = emptyBuf;
-	append(&b, "{\"type\":\"event\",\"data\":");
-	marshal(&b, sp, sig);
-	append(&b, "}\n");
-	write(fd, b.buf, b.len);
-	free(b.buf);
-}
-
-void
-sendprofile(
-	int fd,
-	Node *root,
-	int (*marshal)(Buf *, Node *)
-)
-{
-	Buf b = emptyBuf;
-	append(&b, "{\"type\":\"profile\",\"data\":{\"tree\":");
-	marshal(&b, root);
-	append(&b, "}}\n");
-	if (-1 != write(fd, b.buf, b.len))
-		clearcounters(root);
-	free(b.buf);
 }

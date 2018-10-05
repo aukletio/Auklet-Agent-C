@@ -6,7 +6,7 @@
  * Each node also has counters for number of calls and CPU time (in units of
  * samples). */
 
-/* needs buf.h, stdint.h, pthread.h */
+/* needs stdint.h, pthread.h */
 
 typedef struct {
 	uintptr_t fn, cs;
@@ -53,16 +53,3 @@ int push(Node **sp, Frame *f);
 int pop(Node **sp);
 void sample(Node *sp);
 void clearcounters(Node *n);
-
-void sendstacktrace(
-	int fd,
-	Node *sp,
-	int sig,
-	int (*marshal)(Buf *, Node *, int)
-);
-
-void sendprofile(
-	int fd,
-	Node *root,
-	int (*marshal)(Buf *, Node *)
-);

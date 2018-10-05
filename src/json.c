@@ -7,8 +7,13 @@
 
 #include "json.h"
 
+#include <stdlib.h>
+#include <unistd.h>
+
 #define len(x) (sizeof(x)/sizeof(x[0]))
 
+static int marshaltree(Buf *b, Node *n);
+static int marshalstack(Buf *b, Node *sp, int sig);
 static int isroot(Node *n);
 static int marshalNode(Buf *b, Node *n);
 static int appendLeftBrace(Buf *b, Node *n);
@@ -24,6 +29,31 @@ static int markempty(Node *n);
 static int markemptycallees(Node *n);
 
 /* exported functions */
+
+void
+sendstacktrace(int fd, Node *sp, int sig)
+{
+	Buf b = emptyBuf;
+	append(&b, "{\"type\":\"event\",\"data\":");
+	marshalstack(&b, sp, sig);
+	append(&b, "}\n");
+	write(fd, b.buf, b.len);
+	free(b.buf);
+}
+
+void
+sendprofile(int fd, Node *root)
+{
+	Buf b = emptyBuf;
+	append(&b, "{\"type\":\"profile\",\"data\":{\"tree\":");
+	marshaltree(&b, root);
+	append(&b, "}}\n");
+	if (-1 != write(fd, b.buf, b.len))
+		clearcounters(root);
+	free(b.buf);
+}
+
+/* private functions */
 
 int
 marshaltree(Buf *b, Node *root)
@@ -54,8 +84,6 @@ marshalstack(Buf *b, Node *sp, int sig)
 	append(b, "]}");
 	return 0;
 }
-
-/* private functions */
 
 int
 isroot(Node *n)

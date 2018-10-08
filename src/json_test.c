@@ -90,9 +90,14 @@ test_marshaltree()
 int
 test_marshalstack()
 {
+	Node root = emptyNode(realloc);
+	Node *sp;
 	int pass = 1;
 	int err;
 	Buf got;
+
+	sp = &root;
+	push(&sp, &(Frame){3, 4});
 
 	struct {
 		Node *node;
@@ -103,6 +108,22 @@ test_marshalstack()
 			.want = "{"
 				"\"signal\":\"Unknown signal 0\","
 				"\"stackTrace\":["
+					"{"
+						"\"functionAddress\":0,"
+						"\"callSiteAddress\":0"
+					"}"
+				"]"
+			"}",
+		},
+		{
+			.node = sp,
+			.want = "{"
+				"\"signal\":\"Unknown signal 0\","
+				"\"stackTrace\":["
+					"{"
+						"\"functionAddress\":3,"
+						"\"callSiteAddress\":4"
+					"},"
 					"{"
 						"\"functionAddress\":0,"
 						"\"callSiteAddress\":0"

@@ -4,7 +4,6 @@
 #include "node.h"
 
 #include <stdlib.h>
-#include "walloc.h"
 
 static int equal(Frame *a, Frame *b);
 static Node *get(Node *n, Frame *f);
@@ -17,22 +16,22 @@ static int grow(Node *n);
 Node *
 newNode(Frame *f, Node *parent)
 {
-	Node *n = walloc(NULL, sizeof(Node));
+	Node *n = parent->realloc(NULL, sizeof(Node));
 	if (!n)
 		return NULL;
-	*n = (Node)emptyNode;
+	*n = (Node)emptyNode(parent->realloc);
 	n->f = *f;
 	n->parent = parent;
 	return n;
 }
 
 void
-freeNode(Node *n, int root)
+freeNode(Node *n, int root, void (*free)(void *))
 {
 	if (!n)
 		return;
 	for (int i = 0; i < n->len; ++i)
-		freeNode(n->callee[i], 0);
+		freeNode(n->callee[i], 0, free);
 	free(n->callee);
 	if (!root)
 		free(n);
@@ -41,8 +40,6 @@ freeNode(Node *n, int root)
 int
 push(Node **sp, Frame *f)
 {
-	if (!*sp)
-		return 0;
 	Node *c = getoradd(*sp, f);
 	if (!c)
 		return 0;
@@ -56,9 +53,7 @@ push(Node **sp, Frame *f)
 int
 pop(Node **sp)
 {
-	//if (!sp) return 0;
 	Node *n = *sp;
-	//if (!n) return 0;
 	if (!n->parent)
 		return 0;
 	*sp = n->parent;
@@ -122,7 +117,7 @@ grow(Node *n)
 	if (n->len < n->cap)
 		return 0;
 	unsigned cap = n->cap ? 2 * n->cap : 1;
-	Node **callee = realloc(n->callee, cap*sizeof(Node *));
+	Node **callee = n->realloc(n->callee, cap*sizeof(Node *));
 	if (!callee)
 		return -1;
 	n->callee = callee;

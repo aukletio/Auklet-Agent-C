@@ -21,7 +21,7 @@ test_server()
 		return 0;
 	}
 	
-	Server *server = newServer(fd[0], handler);
+	Server *server = newServer(fd[0], handler, malloc);
 	start(server);
 	for (int i = 0; i < 42; i++) {
 		if (write(fd[1], &buf, sizeof(buf)) == -1) {

@@ -7,8 +7,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "walloc.h"
-
 #include "socket.h"
 
 struct Server {
@@ -25,9 +23,9 @@ static void blocksigs();
 /* exported functions */
 
 Server *
-newServer(int fd, void (*handler)())
+newServer(int fd, void (*handler)(), void *(*malloc)(size_t))
 {
-	Server *s = walloc(NULL, sizeof(Server));
+	Server *s = malloc(sizeof(Server));
 	if (!s)
 		return NULL;
 	*s = (Server){

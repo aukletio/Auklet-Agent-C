@@ -34,25 +34,25 @@ libauklet-internal.o: $(OBJ)
 test: $(TEST:=_test)
 	$(foreach t,$(TEST),$(call writeTest,$t))
 
-node_test: node_test.o walloc.o
+node_test: node_test.o
 	$(linkWithCoverage)
 
-node_test.o: node_test.c node.h walloc.h
+node_test.o: node_test.c node.h
 	$(compileWithCoverage)
 
-json_test: json_test.o node.o buf.o walloc.o
+json_test: json_test.o node.o buf.o
 	$(linkWithCoverage)
 
 json_test.o: json_test.c json.h node.h buf.h
 	$(compileWithCoverage)
 
-buf_test: buf_test.o walloc.o
+buf_test: buf_test.o
 	$(linkWithCoverage)
 
-buf_test.o: buf_test.c walloc.h
+buf_test.o: buf_test.c
 	$(compileWithCoverage)
 
-server_test: server_test.o walloc.o socket.o buf.o
+server_test: server_test.o socket.o buf.o
 	$(linkWithCoverage) -lpthread
 
 server_test.o: server_test.c server.h

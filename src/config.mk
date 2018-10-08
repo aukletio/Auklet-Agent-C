@@ -13,7 +13,7 @@ INSTALL = /usr/local/lib
 TIMESTAMP ?= 'no timestamp'
 
 # project structure
-MOD = buf server json node socket agent walloc
+MOD = buf server json node socket agent
 SRC = $(MOD:=.c)
 OBJ = $(MOD:=.o)
 TEST = buf json node server

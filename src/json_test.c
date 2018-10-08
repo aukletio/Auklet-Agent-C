@@ -10,7 +10,8 @@ int differ(char *a, char *b);
 Node *
 sampledNode()
 {
-	Node *n = newNode(emptyFrame, 0);
+	Node root = emptyNode(realloc);
+	Node *n = newNode(emptyFrame, &root);
 	sample(n);
 	return n;
 }
@@ -18,7 +19,8 @@ sampledNode()
 Node *
 stackedNodes()
 {
-	Node *n = newNode(emptyFrame, NULL);
+	Node root = emptyNode(realloc);
+	Node *n = newNode(emptyFrame, &root);
 	Node *sp = n;
 	push(&sp, emptyFrame);
 	return n;
@@ -36,7 +38,7 @@ test_marshaltree()
 		char *want;
 	} c, cases[] = {
 		{
-			.node = newNode(emptyFrame, NULL),
+			.node = &(Node)emptyNode(realloc),
 			.want = NULL,
 		},
 		{
@@ -76,7 +78,7 @@ test_marshaltree()
 			       "  got    %s\n", __func__, i, c.want, got.buf);
 		}
 
-		freeNode(c.node, 0);
+		freeNode(c.node, 1, free);
 		got.free(got.buf);
 	}
 
@@ -95,7 +97,7 @@ test_marshalstack()
 		char *want;
 	} c, cases[] = {
 		{
-			.node = newNode(emptyFrame, NULL),
+			.node = &(Node)emptyNode(realloc),
 			.want = "{"
 				"\"signal\":\"Unknown signal 0\","
 				"\"stackTrace\":["
@@ -125,7 +127,7 @@ test_marshalstack()
 			       "  got    %s\n", __func__, i, c.want, got.buf);
 		}
 
-		freeNode(c.node, 0);
+		freeNode(c.node, 1, free);
 		got.free(got.buf);
 	}
 

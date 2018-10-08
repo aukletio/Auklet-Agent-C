@@ -40,7 +40,7 @@ static void __attribute__ ((destructor (101))) cleanup();
  * functions in the program, which could include main, any functions launched
  * with pthread_create, and possibly constructors or destructors (invoked by the
  * C runtime). */
-static Node root = emptyNode;
+static Node root = emptyNode(realloc);
 
 /* sp is the stack pointer for the current thread. Since this variable is
  * declared as thread-specific, the C runtime will automatically allocate an
@@ -166,7 +166,7 @@ setup()
 	else
 		sockfd = fd;
 
-	server = newServer(sockfd, profilehandler);
+	server = newServer(sockfd, profilehandler, malloc);
 	dprintf(sockfd, "{\"version\":\"%s %s\"}", AUKLET_VERSION, AUKLET_TIMESTAMP);
 	setagentstate(ON);
 }
@@ -177,7 +177,7 @@ cleanup()
 {
 	profilehandler();
 	setagentstate(OFF);
-	freeNode(&root, 1);
+	freeNode(&root, 1, free);
 	free(server);
 	close(sockfd);
 }

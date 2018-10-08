@@ -2,5 +2,5 @@
 
 /* needs node.h, buf.h */
 
-void sendstacktrace(Buf *b, int fd, Node *sp, int sig);
-void sendprofile(Buf *b, int fd, Node *root);
+int sendstacktrace(Buf *b, int fd, Node *sp, int sig);
+int sendprofile(Buf *b, int fd, Node *root);

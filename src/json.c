@@ -30,23 +30,48 @@ static int markemptycallees(Node *n);
 
 /* exported functions */
 
-void
+int
 sendstacktrace(Buf *b, int fd, Node *sp, int sig)
 {
-	append(b, "{\"type\":\"event\",\"data\":");
-	marshalstack(b, sp, sig);
-	append(b, "}\n");
-	write(fd, b->buf, b->len);
+	int err;
+
+	err = append(b, "{\"type\":\"event\",\"data\":");
+	if (err)
+		return err;
+
+	err = marshalstack(b, sp, sig);
+	if (err)
+		return err;
+
+	err = append(b, "}\n");
+	if (err)
+		return err;
+
+	return -1 == write(fd, b->buf, b->len);
 }
 
-void
+int
 sendprofile(Buf *b, int fd, Node *root)
 {
-	append(b, "{\"type\":\"profile\",\"data\":{\"tree\":");
-	marshaltree(b, root);
-	append(b, "}}\n");
-	if (-1 != write(fd, b->buf, b->len))
-		clearcounters(root);
+	int err;
+	err = append(b, "{\"type\":\"profile\",\"data\":{\"tree\":");
+	if (err)
+		return err;
+
+	err = marshaltree(b, root);
+	if (err)
+		return err;
+
+	err = append(b, "}}\n");
+	if (err)
+		return err;
+
+	err = -1 == write(fd, b->buf, b->len);
+	if (err)
+		return err;
+
+	clearcounters(root);
+	return 0;
 }
 
 /* private functions */
@@ -61,24 +86,30 @@ marshaltree(Buf *b, Node *root)
 int
 marshalstack(Buf *b, Node *sp, int sig)
 {
-	append(b,
-	"{"
+	int err;
+
+	err = append(b, "{"
 		"\"signal\":\"%s\","
 		"\"stackTrace\":[", strsignal(sig));
+	if (err)
+		return err;
+
 	for (Node *n = sp; n; n = n->parent) {
 		if (n != sp) {
 			/* we've passed the first node */
-			append(b, ",");
+			err = append(b, ",");
+			if (err)
+				return err;
 		}
 
-		append(b,
-		"{"
+		err = append(b, "{"
 			"\"functionAddress\":%ld,"
 			"\"callSiteAddress\":%ld"
 		"}", n->f.fn, n->f.cs);
+		if (err)
+			return err;
 	}
-	append(b, "]}");
-	return 0;
+	return append(b, "]}");
 }
 
 int
@@ -168,6 +199,7 @@ int
 appendCalleesValue(Buf *b, Node *n)
 {
 	int err = 0;
+
 	pthread_mutex_lock(&n->llist);
 	for (int i = 0; i < n->len; ++i) {
 		if (i) {

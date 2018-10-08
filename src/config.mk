@@ -33,7 +33,7 @@ moduleRules = $(foreach f,$(SRC),$(call implicitRule,$f))
 define writeTest =
 
 	@echo testing $1
-	@./$1_test
+	@valgrind --error-exitcode=1 -q ./$1_test
 	@gcov $1_test.c
 	@rm -f $1_test.c.gcov # don't want coverage on the test apparatus
 	@sed -i s,Source:,Source:src/, $1.c.gcov

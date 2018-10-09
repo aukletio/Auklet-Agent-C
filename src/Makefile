@@ -1,9 +1,8 @@
 include config.mk
 
-SRC = buf.c server.c json.c node.c socket.c agent.c walloc.c
-OBJ = $(SRC:.c=.o)
-
 all: test install
+
+$(eval $(moduleRules))
 
 install: libauklet.a
 	sudo cp $< $(INSTALL)/$<
@@ -32,25 +31,31 @@ internal-symbols.txt: libauklet-internal.o
 libauklet-internal.o: $(OBJ)
 	$(LD) -r $^ -o $@
 
-agent.o: CFLAGS += -DAUKLET_VERSION=\"$$(cat ../VERSION)\" -DAUKLET_TIMESTAMP=\"${TIMESTAMP}\"
-agent.o: agent.c server.h node.h socket.h buf.h json.h
+test: $(TEST:=_test)
+	$(foreach t,$(TEST),$(call writeTest,$t))
 
-json.o: json.c json.h node.h buf.h
+node_test: node_test.o walloc.o
+	$(linkWithCoverage)
 
-socket.o: socket.c socket.h node.h
+node_test.o: node_test.c node.h walloc.h
+	$(compileWithCoverage)
 
-# This rule handles modules buf, node, server and walloc.
-%.o: %.c %.h
-
-test: json_test
-	./json_test
-
-json_test: json_test.o json.o node.o buf.o walloc.o
-	$(CC) -o $@ $^
+json_test: json_test.o node.o buf.o walloc.o
+	$(linkWithCoverage)
 
 json_test.o: json_test.c json.h node.h buf.h
+	$(compileWithCoverage)
+
+buf_test: buf_test.o walloc.o
+	$(linkWithCoverage)
+
+buf_test.o: buf_test.c walloc.h
+	$(compileWithCoverage)
 
 clean:
-	rm -f $(OBJ) libauklet-internal.o libauklet.o libauklet.a libauklet.tgz internal-symbols.txt json_test json_test.o
+	@rm -f $(OBJ)
+	@rm -f $(TEST:=_test) $(TEST:=_test.o)
+	@rm -f libauklet-internal.o libauklet.o libauklet.a libauklet.tgz internal-symbols.txt
+	@rm -f $(GCOV)
 
 .PHONY: install uninstall clean test

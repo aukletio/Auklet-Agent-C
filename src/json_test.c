@@ -1,14 +1,7 @@
-#include <stdint.h>
-#include <pthread.h>
-#include "node.h"
-#include "buf.h"
-#include "json.h"
+#include "json.c"
 
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#define len(x) (sizeof(x)/sizeof(x[0]))
 
 typedef struct {
 	const char *name;

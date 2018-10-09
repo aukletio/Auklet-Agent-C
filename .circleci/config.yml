@@ -58,7 +58,7 @@ jobs:
             - run:
                 name: Run tests
                 command: |
-                  make -C src/ test
+                  bash .devops/test_and_coverage.sh
 
             ##
             # DEPLOYMENT

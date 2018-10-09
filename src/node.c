@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 
+static Node *newNode(Frame *f, Node *parent);
 static int equal(Frame *a, Frame *b);
 static Node *get(Node *n, Frame *f);
 static Node *add(Node *n, Frame *f);
@@ -12,18 +13,6 @@ static Node *getoradd(Node *n, Frame *f);
 static int grow(Node *n);
 
 /* exported functions */
-
-Node *
-newNode(Frame *f, Node *parent)
-{
-	Node *n = parent->realloc(NULL, sizeof(Node));
-	if (!n)
-		return NULL;
-	*n = (Node)emptyNode(parent->realloc);
-	n->f = *f;
-	n->parent = parent;
-	return n;
-}
 
 void
 freeNode(Node *n, int root, void (*free)(void *))
@@ -71,6 +60,18 @@ sample(Node *sp)
 }
 
 /* private functions */
+
+Node *
+newNode(Frame *f, Node *parent)
+{
+	Node *n = parent->realloc(NULL, sizeof(Node));
+	if (!n)
+		return NULL;
+	*n = (Node)emptyNode(parent->realloc);
+	n->f = *f;
+	n->parent = parent;
+	return n;
+}
 
 int
 equal(Frame *a, Frame *b)

@@ -8,54 +8,100 @@ Frame *emptyFrame = &(Frame){.fn = 0, .cs = 0};
 
 int differ(char *a, char *b);
 
-Node *
-sampledNode()
+void nop(Node **sp) {}
+void sampled(Node **sp) { sample(*sp); }
+void pushed(Node **sp) { push(sp, &(Frame){3, 4}); }
+
+void
+twocallees(Node **sp)
 {
-	Node root = emptyNode(realloc);
-	Node *n = newNode(emptyFrame, &root);
-	sample(n);
-	return n;
+	push(sp, &(Frame){5, 6});
+	pop(sp);
+	push(sp, &(Frame){7, 8});
 }
 
-Node *
-stackedNodes()
+void
+twopushedcallees(Node **sp)
 {
-	Node root = emptyNode(realloc);
-	Node *n = newNode(emptyFrame, &root);
-	Node *sp = n;
-	push(&sp, emptyFrame);
-	return n;
+	push(sp, &(Frame){3, 4});
+	push(sp, &(Frame){5, 6});
+	pop(sp);
+	push(sp, &(Frame){7, 8});
 }
 
 int
 test_marshaltree()
 {
+	Node root, *sp;
 	int pass = 1;
 	int err;
 	Buf got;
 
 	struct {
-		Node *node;
+		void (*stackop)(Node **);
 		char *want;
 	} c, cases[] = {
 		{
-			.node = &(Node)emptyNode(realloc),
+			.stackop = nop,
 			.want = NULL,
 		},
 		{
-			.node = sampledNode(),
+			.stackop = sampled,
 			.want = "{"
 				"\"nSamples\":1,"
 				"\"callees\":[]"
 			"}",
 		},
 		{
-			.node = stackedNodes(),
+			.stackop = pushed,
 			.want = "{"
 				"\"callees\":["
 					"{"
+						"\"functionAddress\":3,"
 						"\"nCalls\":1,"
 						"\"callees\":[]"
+					"}"
+				"]"
+			"}",
+		},
+		{
+			.stackop = twocallees,
+			.want = "{"
+				"\"callees\":["
+					"{"
+						"\"functionAddress\":5,"
+						"\"nCalls\":1,"
+						"\"callees\":[]"
+					"},"
+					"{"
+						"\"functionAddress\":7,"
+						"\"nCalls\":1,"
+						"\"callees\":[]"
+					"}"
+				"]"
+			"}",
+		},
+		{
+			.stackop = twopushedcallees,
+			.want = "{"
+				"\"callees\":["
+					"{"
+						"\"functionAddress\":3,"
+						"\"nCalls\":1,"
+						"\"callees\":["
+							"{"
+								"\"functionAddress\":5,"
+								"\"callSiteAddress\":6,"
+								"\"nCalls\":1,"
+								"\"callees\":[]"
+							"},"
+							"{"
+								"\"functionAddress\":7,"
+								"\"callSiteAddress\":8,"
+								"\"nCalls\":1,"
+								"\"callees\":[]"
+							"}"
+						"]"
 					"}"
 				"]"
 			"}",
@@ -66,7 +112,11 @@ test_marshaltree()
 		c = cases[i];
 		got = emptyBuf(realloc, free);
 
-		err = marshaltree(&got, c.node);
+		root = (Node)emptyNode(realloc);
+		sp = &root;
+		c.stackop(&sp);
+
+		err = marshaltree(&got, &root);
 		if (err) {
 			pass = 0;
 			printf("%s case %d: error: %d\n", __func__, i, err);
@@ -79,7 +129,7 @@ test_marshaltree()
 			       "  got    %s\n", __func__, i, c.want, got.buf);
 		}
 
-		freeNode(c.node, 1, free);
+		freeNode(&root, 1, free);
 		got.free(got.buf);
 	}
 

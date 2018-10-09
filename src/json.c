@@ -96,13 +96,13 @@ marshalNode(Buf *b, Node *n)
 	append(b, "{");
 
 	if (n->f.fn)
-		return append(b, "\"functionAddress\":%ld,", (unsigned long)n->f.fn);
+		append(b, "\"functionAddress\":%ld,", (unsigned long)n->f.fn);
 
 	if (n->f.cs && !isroot(n->parent)) {
 		/* We don't want to marshal the callsite if the parent is root.
 		 * This is because any child of root does not have a meaningful
 		 * callsite. */
-		return append(b, "\"callSiteAddress\":%ld,", (unsigned long)n->f.cs);
+		append(b, "\"callSiteAddress\":%ld,", (unsigned long)n->f.cs);
 	}
 
 	pthread_mutex_lock(&n->lcall);

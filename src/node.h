@@ -49,7 +49,6 @@ struct Node {
 	.empty = 1, \
 }
 
-Node *newNode(Frame *f, Node *parent);
 void freeNode(Node *n, int root, void (*free)(void *));
 int push(Node **sp, Frame *f);
 int pop(Node **sp);

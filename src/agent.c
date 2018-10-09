@@ -98,7 +98,8 @@ sigerr(int n)
 {
 	Buf b = emptyBuf(realloc, free);
 	profilehandler();
-	sendstacktrace(&b, sockfd, sp, n);
+	marshalstacktrace(&b, sp, n);
+	write(sockfd, b.buf, b.len); /* what if write fails? */
 	b.free(b.buf);
 	_exit(1);
 }
@@ -109,7 +110,9 @@ void
 profilehandler()
 {
 	Buf b = emptyBuf(realloc, free);
-	sendprofile(&b, sockfd, &root);
+	marshalprofile(&b, &root);
+	write(sockfd, b.buf, b.len); /* what if write fails? */
+	clearcounters(&root);
 	b.free(b.buf);
 }
 

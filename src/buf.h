@@ -8,6 +8,8 @@ typedef struct {
 
 	void *(*realloc)(void *, size_t);
 	void (*free)(void *);
+
+	int err;
 } Buf;
 
 #define emptyBuf(r, f) (Buf){ \
@@ -16,6 +18,7 @@ typedef struct {
 	.len = 0, \
 	.realloc = (r), \
 	.free = (f), \
+	.err = 0, \
 }
 
 int append(Buf *b, char *fmt, ...);

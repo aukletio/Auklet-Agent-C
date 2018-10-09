@@ -2,7 +2,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <fcntl.h>
 #include <errno.h>
 
 Frame *emptyFrame = &(Frame){.fn = 0, .cs = 0};
@@ -171,11 +170,10 @@ differ(char *a, char *b)
 }
 
 int
-test_send()
+test_marshal()
 {
-	int fd;
 	Buf b;
-	int err, pass;
+	int pass;
 	struct {
 		Node *n;
 	} c, cases[] = {
@@ -185,33 +183,26 @@ test_send()
 	};
 
 	pass = 1;
-	fd = open("/dev/null", O_WRONLY);
-	if (-1 == fd) {
-		printf("%s: open: %s", __func__, strerror(errno));
-		pass = 0;
-	}
-
 	for (int i = 0; i < len(cases); i++) {
 		c = cases[i];
 
 		b = emptyBuf(realloc, free);
-		err = sendstacktrace(&b, fd, c.n, 0);
-		if (err) {
+		marshalstacktrace(&b, c.n, 0);
+		if (b.err) {
 			pass = 0;
-			printf("%s case %d: sendstacktrace: %s\n", __func__, i, strerror(errno));
+			printf("%s case %d: marshalstacktrace: %s\n", __func__, i, strerror(errno));
 		}
 		b.free(b.buf);
 
 		b = emptyBuf(realloc, free);
-		err = sendprofile(&b, fd, c.n);
-		if (err) {
+		marshalprofile(&b, c.n);
+		if (b.err) {
 			pass = 0;
-			printf("%s case %d: sendprofile: %s\n", __func__, i, strerror(errno));
+			printf("%s case %d: marshalprofile: %s\n", __func__, i, strerror(errno));
 		}
 		b.free(b.buf);
 	}
 
-	close(fd);
 	return pass;
 }
 
@@ -222,7 +213,7 @@ main()
 	int (*tests[])() = {
 		test_marshaltree,
 		test_marshalstack,
-		test_send,
+		test_marshal,
 	};
 
 	for (int i = 0; i< len(tests); i++)

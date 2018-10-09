@@ -2,5 +2,5 @@
 
 /* needs node.h, buf.h */
 
-int sendstacktrace(Buf *b, int fd, Node *sp, int sig);
-int sendprofile(Buf *b, int fd, Node *root);
+int marshalstacktrace(Buf *b, Node *sp, int sig);
+int marshalprofile(Buf *b, Node *root);

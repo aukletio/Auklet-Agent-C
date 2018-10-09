@@ -16,62 +16,33 @@ static int marshaltree(Buf *b, Node *n);
 static int marshalstack(Buf *b, Node *sp, int sig);
 static int isroot(Node *n);
 static int marshalNode(Buf *b, Node *n);
-static int appendLeftBrace(Buf *b, Node *n);
-static int appendRightBrace(Buf *b, Node *n);
-static int appendFn(Buf *b, Node *n);
-static int appendCs(Buf *b, Node *n);
-static int appendCalls(Buf *b, Node *n);
-static int appendSamples(Buf *b, Node *n);
-static int appendCalleesKey(Buf *b, Node *n);
-static int appendCalleesValue(Buf *b, Node *n);
-static int appendRightBracket(Buf *b, Node *n);
 static int markempty(Node *n);
 static int markemptycallees(Node *n);
 
 /* exported functions */
 
 int
-sendstacktrace(Buf *b, int fd, Node *sp, int sig)
+marshalstacktrace(Buf *b, Node *sp, int sig)
 {
-	int err;
+	if (b->err)
+		return b->err;
 
-	err = append(b, "{\"type\":\"event\",\"data\":");
-	if (err)
-		return err;
-
-	err = marshalstack(b, sp, sig);
-	if (err)
-		return err;
-
-	err = append(b, "}\n");
-	if (err)
-		return err;
-
-	return -1 == write(fd, b->buf, b->len);
+	append(b, "{\"type\":\"event\",\"data\":");
+	marshalstack(b, sp, sig);
+	append(b, "}\n");
+	return b->err;
 }
 
 int
-sendprofile(Buf *b, int fd, Node *root)
+marshalprofile(Buf *b, Node *root)
 {
-	int err;
-	err = append(b, "{\"type\":\"profile\",\"data\":{\"tree\":");
-	if (err)
-		return err;
+	if (b->err)
+		return b->err;
 
-	err = marshaltree(b, root);
-	if (err)
-		return err;
-
-	err = append(b, "}}\n");
-	if (err)
-		return err;
-
-	err = -1 == write(fd, b->buf, b->len);
-	if (err)
-		return err;
-
-	clearcounters(root);
-	return 0;
+	append(b, "{\"type\":\"profile\",\"data\":{\"tree\":");
+	marshaltree(b, root);
+	append(b, "}}\n");
+	return b->err;
 }
 
 /* private functions */
@@ -86,30 +57,25 @@ marshaltree(Buf *b, Node *root)
 int
 marshalstack(Buf *b, Node *sp, int sig)
 {
-	int err;
+	if (b->err)
+		return b->err;
 
-	err = append(b, "{"
+	append(b, "{"
 		"\"signal\":\"%s\","
 		"\"stackTrace\":[", strsignal(sig));
-	if (err)
-		return err;
 
 	for (Node *n = sp; n; n = n->parent) {
-		if (n != sp) {
+		if (n != sp)
 			/* we've passed the first node */
-			err = append(b, ",");
-			if (err)
-				return err;
-		}
+			append(b, ",");
 
-		err = append(b, "{"
+		append(b, "{"
 			"\"functionAddress\":%ld,"
 			"\"callSiteAddress\":%ld"
 		"}", n->f.fn, n->f.cs);
-		if (err)
-			return err;
 	}
-	return append(b, "]}");
+	append(b, "]}");
+	return b->err;
 }
 
 int
@@ -121,103 +87,48 @@ isroot(Node *n)
 int
 marshalNode(Buf *b, Node *n)
 {
-	int (*action[])(Buf *, Node *) = {
-		appendLeftBrace,
-		appendFn,
-		appendCs,
-		appendCalls,
-		appendSamples,
-		appendCalleesKey,
-		appendCalleesValue,
-		appendRightBracket,
-		appendRightBrace,
-	};
+	if (b->err)
+		return b->err;
 
 	if (!n || n->empty)
 		return 0;
 
-	for (int i = 0; i < len(action); i++) {
-		int err = action[i](b, n);
-		if (err)
-			return err;
-	}
-	return 0;
-}
+	append(b, "{");
 
-int appendLeftBrace(Buf *b, Node *n) { return append(b, "{"); }
-int appendRightBrace(Buf *b, Node *n) { return append(b, "}"); }
-
-int
-appendFn(Buf *b, Node *n)
-{
 	if (n->f.fn)
 		return append(b, "\"functionAddress\":%ld,", (unsigned long)n->f.fn);
-	return 0;
-}
 
-int
-appendCs(Buf *b, Node *n)
-{
 	if (n->f.cs && !isroot(n->parent)) {
 		/* We don't want to marshal the callsite if the parent is root.
 		 * This is because any child of root does not have a meaningful
 		 * callsite. */
 		return append(b, "\"callSiteAddress\":%ld,", (unsigned long)n->f.cs);
 	}
-	return 0;
-}
 
-int
-appendCalls(Buf *b, Node *n)
-{
-	int err = 0;
 	pthread_mutex_lock(&n->lcall);
 	if (n->ncall)
-		err = append(b, "\"nCalls\":%u,", n->ncall);
+		append(b, "\"nCalls\":%u,", n->ncall);
 	pthread_mutex_unlock(&n->lcall);
-	return err;
-}
 
-int
-appendSamples(Buf *b, Node *n)
-{
-	int err = 0;
 	pthread_mutex_lock(&n->lsamp);
 	if (n->nsamp)
-		err = append(b, "\"nSamples\":%u,", n->nsamp);
+		append(b, "\"nSamples\":%u,", n->nsamp);
 	pthread_mutex_unlock(&n->lsamp);
-	return err;
-}
 
-int
-appendCalleesKey(Buf *b, Node *n)
-{
-	return append(b, "\"callees\":[");
-}
-
-int
-appendCalleesValue(Buf *b, Node *n)
-{
-	int err = 0;
+	append(b, "\"callees\":[");
 
 	pthread_mutex_lock(&n->llist);
 	for (int i = 0; i < n->len; ++i) {
-		if (i) {
-			err = append(b, ",");
-			if (err)
-				goto end;
-		}
+		if (i)
+			append(b, ",");
 
-		err = marshalNode(b, n->callee[i]);
-		if (err)
-			goto end;
+		marshalNode(b, n->callee[i]);
 	}
-end:
 	pthread_mutex_unlock(&n->llist);
-	return err;
-}
 
-int appendRightBracket(Buf *b, Node *n) { return append(b, "]"); }
+	append(b, "]}");
+	return b->err;
+}
 
 /* markempty determines if n is empty and sets n->empty accordingly. It also
  * returns this value. */

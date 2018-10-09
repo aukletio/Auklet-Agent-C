@@ -52,7 +52,7 @@ buf_test: buf_test.o
 buf_test.o: buf_test.c
 	$(compileWithCoverage)
 
-server_test: server_test.o socket.o buf.o
+server_test: server_test.o logger.o buf.o
 	$(linkWithCoverage) -lpthread
 
 server_test.o: server_test.c server.h

@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include "node.h"
 
-#include "socket.h"
+#include "logger.h"
 
 #include <unistd.h>
 #include <signal.h>
@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/time.h>
+#include <sys/stat.h>
 
 #define SAMPLE_PERIOD {.tv_sec = 0, .tv_usec = 10000}
 
@@ -30,6 +31,7 @@ static void sigerr(int n);
 static void profilehandler();
 static void siginstall(int sig, void (*handler)(int));
 static void setagentstate(int state);
+static int connecttoclient();
 static void __attribute__ ((constructor (101))) setup();
 static void __attribute__ ((destructor (101))) cleanup();
 
@@ -156,6 +158,20 @@ setagentstate(int state)
 	}
 	agentstate = state;
 	logprint(sockfd, INFO, "agent state: %s", agentstate?"on":"off");
+}
+
+/* connecttoclient connects to the socket provided by
+ * an Auklet client and returns a valid file descriptor
+ * if the connection succeeded, othwerise -1. */
+int
+connecttoclient()
+{
+	int fd = 4;
+	struct stat buf;
+
+	if (-1 == fstat(fd, &buf))
+		return -1;
+	return fd;
 }
 
 /* setup runs before main and initializes the agent. */

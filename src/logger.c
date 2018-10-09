@@ -1,14 +1,13 @@
 #include <stdint.h>
 #include <pthread.h>
 
-#include "socket.h"
+#include "logger.h"
 
 #include "buf.h"
 
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 
 static char *loglevel[] = {
 	[DEBUG] = "debug",
@@ -17,20 +16,6 @@ static char *loglevel[] = {
 };
 
 /* exported functions */
-
-/* connecttoclient connects to the socket provided by
- * an Auklet client and returns a valid file descriptor
- * if the connection succeeded, othwerise -1. */
-int
-connecttoclient()
-{
-	int fd = 4;
-	struct stat buf;
-
-	if (-1 == fstat(fd, &buf))
-		return -1;
-	return fd;
-}
 
 int
 logprint(int fd, int level, char *fmt, ...)

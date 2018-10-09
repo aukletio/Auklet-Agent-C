@@ -7,7 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "socket.h"
+#include "logger.h"
 
 struct Server {
 	int fd;            /* incoming requests, outgoing logs */

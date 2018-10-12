@@ -43,7 +43,7 @@ test_marshaltree()
 	} c, cases[] = {
 		{
 			.stackop = nop,
-			.want = NULL,
+			.want = "{}",
 		},
 		{
 			.stackop = sampled,

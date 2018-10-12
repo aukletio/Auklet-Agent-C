@@ -96,7 +96,7 @@ add(Node *n, Frame *f)
 	Node *new = newNode(f, n);
 	if (!new)
 		return NULL;
-	++n->len;
+	++n->len; // <-- race
 	n->callee[n->len - 1] = new;
 	return new;
 }
@@ -129,8 +129,16 @@ grow(Node *n)
 void
 clearcounters(Node *n)
 {
+	pthread_mutex_lock(&n->lsamp);
 	n->nsamp = 0;
+	pthread_mutex_unlock(&n->lsamp);
+
+	pthread_mutex_lock(&n->lcall);
 	n->ncall = 0;
+	pthread_mutex_unlock(&n->lcall);
+
+	pthread_mutex_lock(&n->llist);
 	for (int i = 0; i < n->len; ++i)
 		clearcounters(n->callee[i]);
+	pthread_mutex_unlock(&n->llist);
 }

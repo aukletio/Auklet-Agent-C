@@ -42,11 +42,10 @@ start(Server *s)
 }
 
 int
-wait(Server *s, int kill)
+wait(Server *s, int cancel)
 {
-	if (kill)
-		/* SIGKILL is a valid signal, so we ignore the return value */
-		pthread_kill(s->t, SIGKILL);
+	if (cancel)
+		pthread_cancel(s->t);
 
 	return pthread_join(s->t, NULL);
 }

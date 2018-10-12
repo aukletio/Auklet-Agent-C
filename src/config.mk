@@ -16,8 +16,8 @@ TIMESTAMP ?= 'no timestamp'
 MOD = buf server json node logger agent
 SRC = $(MOD:=.c)
 OBJ = $(MOD:=.o)
-TEST = buf json node server
-GCOV = $(MOD:=.c.gcov) $(TEST:=_test.gcno) $(TEST:=_test.gcda)
+COVER = buf json node server
+GCOV = $(MOD:=.c.gcov) $(COVER:=_test.gcno) $(COVER:=_test.gcda)
 
 # utility functions
 

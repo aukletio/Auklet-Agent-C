@@ -186,7 +186,7 @@ setup()
 		sockfd = fd;
 
 	server = newServer(sockfd, profilehandler, malloc);
-	dprintf(sockfd, "{\"version\":\"%s %s\"}", AUKLET_VERSION, AUKLET_TIMESTAMP);
+	dprintf(sockfd, "{\"version\":\"%s %s\"}\n", AUKLET_VERSION, AUKLET_TIMESTAMP);
 	setagentstate(ON);
 }
 

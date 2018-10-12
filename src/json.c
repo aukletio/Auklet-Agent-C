@@ -90,9 +90,6 @@ marshalNode(Buf *b, Node *n)
 	if (b->err)
 		return b->err;
 
-	if (!n || n->empty)
-		return 0;
-
 	append(b, "{");
 
 	if (n->f.fn)
@@ -104,6 +101,9 @@ marshalNode(Buf *b, Node *n)
 		 * callsite. */
 		append(b, "\"callSiteAddress\":%ld,", (unsigned long)n->f.cs);
 	}
+
+	if (n->empty)
+		goto end;
 
 	pthread_mutex_lock(&n->lcall);
 	if (n->ncall)
@@ -126,7 +126,9 @@ marshalNode(Buf *b, Node *n)
 	}
 	pthread_mutex_unlock(&n->llist);
 
-	append(b, "]}");
+	append(b, "]");
+end:
+	append(b, "}");
 	return b->err;
 }
 
@@ -140,7 +142,15 @@ markempty(Node *n)
 	/* markemptycallees must be called first because it must be run
 	 * unconditionally. Otherwise short-circuiting will terminate the
 	 * statement early and the callees won't get marked. */
-	n->empty = markemptycallees(n) && !n->ncall && !n->nsamp;
+	n->empty = markemptycallees(n);
+
+	pthread_mutex_lock(&n->lcall);
+	n->empty = n->empty && !n->ncall;
+	pthread_mutex_unlock(&n->lcall);
+
+	pthread_mutex_lock(&n->lsamp);
+	n->empty = n->empty && !n->nsamp;
+	pthread_mutex_unlock(&n->lsamp);
 	return n->empty;
 }
 
@@ -152,8 +162,10 @@ markemptycallees(Node *n)
 	/* Assume empty, initially. This ensures that if n->len == 0, we count
 	 * that as n's callees being empty. */
 	int empty = 1;
-	for (int i = 0; i < n->len; ++i)
+	pthread_mutex_lock(&n->llist);
+	for (int i = 0; i < n->len; ++i) // <-- race
 		if (!markempty(n->callee[i]))
 			empty = 0;
+	pthread_mutex_unlock(&n->llist);
 	return empty;
 }

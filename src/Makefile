@@ -31,8 +31,16 @@ internal-symbols.txt: libauklet-internal.o
 libauklet-internal.o: $(OBJ)
 	$(LD) -r $^ -o $@
 
-test: $(TEST:=_test)
-	$(foreach t,$(TEST),$(call writeTest,$t))
+test: cover #thread
+
+thread: thread_test
+	client -no-network valgrind --error-exitcode=1 -q --tool=drd ./thread_test
+
+thread_test: thread_test.c libauklet.o
+	@$(CC) $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS) -finstrument-functions -lpthread -o $@
+
+cover: $(COVER:=_test)
+	$(foreach t,$(COVER),$(call writeTest,$t))
 
 node_test: node_test.o
 	$(linkWithCoverage)
@@ -60,8 +68,9 @@ server_test.o: server_test.c server.h
 
 clean:
 	@rm -f $(OBJ)
-	@rm -f $(TEST:=_test) $(TEST:=_test.o)
+	@rm -f $(COVER:=_test) $(COVER:=_test.o)
 	@rm -f libauklet-internal.o libauklet.o libauklet.a libauklet.tgz internal-symbols.txt
 	@rm -f $(GCOV)
+	@rm -f thread_test
 
 .PHONY: install uninstall clean test

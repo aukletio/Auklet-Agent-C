@@ -73,4 +73,4 @@ clean:
 	@rm -f $(GCOV)
 	@rm -f thread_test
 
-.PHONY: install uninstall clean test
+.PHONY: install uninstall clean test thread

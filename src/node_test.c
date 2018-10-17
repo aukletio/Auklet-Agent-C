@@ -3,8 +3,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "walloc.h"
-
 #define len(x) (sizeof(x)/sizeof(x[0]))
 
 Frame *emptyFrame = &(Frame){.fn = 0, .cs = 0};
@@ -16,9 +14,8 @@ void *oom(void *p, size_t size) { return NULL; }
 int
 test_newNode()
 {
-	walloc = oom;
-	Node *n = newNode(emptyFrame, NULL);
-	walloc = realloc;
+	Node root = emptyNode(oom);
+	Node *n = newNode(emptyFrame, &root);
 	if (n) {
 		printf("%s: expected NULL (out of memory), got %p\n", __func__, (void *)n);
 		return 0;
@@ -29,29 +26,34 @@ test_newNode()
 int
 test_freeNode()
 {
-	freeNode(NULL, 0);
-	freeNode(newNode(emptyFrame, NULL), 0);
+	Node root = emptyNode(realloc);
+	Node *sp = &root;
+	push(&sp, emptyFrame);
+	freeNode(&root, 1, free);
 	return 1;
 }
 
 int
 test_push()
 {
+	Node root = emptyNode(realloc);
+	int got, pass;
 	struct {
-		Node *n;
+		Node *sp;
 		int expect;
-	} cases[] = {
-		{.n = NULL,                      .expect = 0},
-		{.n = newNode(emptyFrame, NULL), .expect = 1},
+	} c, cases[] = {
+		{.sp = &root, .expect = 1},
 	};
 
-	walloc = realloc;
-	int pass = 1;
+	pass = 1;
 	for (int i = 0; i < len(cases); i++) {
-		int got = push(&cases[i].n, emptyFrame);
-		if (got != cases[i].expect) {
-			printf("%s case %d: expected %d, got %d\n", __func__, i, cases[i].expect, got);
+		c = cases[i];
+		got = push(&c.sp, emptyFrame);
+		if (got != c.expect) {
+			printf("%s case %d: expected %d, got %d\n", __func__, i, c.expect, got);
 			pass = 0;
+		} else {
+			freeNode(&root, 1, free);
 		}
 	}
 	return pass;
@@ -60,22 +62,22 @@ test_push()
 int
 test_pop()
 {
-	walloc = realloc;
-	Node root = emptyNode;
+	int got, pass;
+	Node root = emptyNode(realloc);
 	struct {
 		Node *n;
 		int expect;
-	} cases[] = {
+	} c, cases[] = {
 		{.n = &root,                      .expect = 0}, /* no parent */
 		{.n = newNode(emptyFrame, &root), .expect = 1}, /* has parent */
 	};
 
-	int pass = 1;
+	pass = 1;
 	for (int i = 0; i < len(cases); i++) {
-		Node *n = cases[i].n;
-		int got = pop(&n);
-		if (got != cases[i].expect) {
-			printf("%s case %d: expected %d, got %d\n", __func__, i, cases[i].expect, got);
+		c = cases[i];
+		got = pop(&c.n);
+		if (got != c.expect) {
+			printf("%s case %d: expected %d, got %d\n", __func__, i, c.expect, got);
 			pass = 0;
 		}
 	}
@@ -85,9 +87,9 @@ test_pop()
 int
 test_sample()
 {
-	Node n = (Node)emptyNode;
-	sample(&n);
-	return n.nsamp == 1;
+	Node root = emptyNode(NULL);
+	sample(&root);
+	return root.nsamp == 1;
 }
 
 int
@@ -99,11 +101,14 @@ test_equal()
 int
 test_clearcounters()
 {
-	Node root = emptyNode;
+	Node root = emptyNode(realloc);
 	Node *sp = &root;
+
 	push(&sp, emptyFrame);
 	sample(sp);
 	clearcounters(&root);
+
+	freeNode(&root, 1, free);
 	return !root.nsamp && !root.ncall;
 }
 

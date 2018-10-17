@@ -4,55 +4,64 @@
 #define len(x) (sizeof(x)/sizeof(x[0]))
 
 void *oom(void *p, size_t size) { return NULL; }
+void nop(void *p) {}
 
 int
 test_grow()
 {
+	int got;
+	int pass = 1;
+
 	struct {
-		void *(*walloc)(void *p, size_t size);
+		Buf b;
 		int err;
-	} cases[] = {
-		{.walloc = realloc, .err = 0},
-		{.walloc = oom,     .err = 1},
+	} c, cases[] = {
+		{.b = emptyBuf(realloc, free), .err = 0},
+		{.b = emptyBuf(oom, nop),      .err = 1},
 	};
 
-	int pass = 1;
 	for (int i = 0; i < len(cases); i++) {
-		walloc = cases[i].walloc;
-		int got = grow(&emptyBuf);
-		if (got != cases[i].err) {
+		c = cases[i];
+		got = grow(&c.b);
+
+		if (got != c.err) {
 			pass = 0;
-			printf("%s case %d: expected %d, got %d\n", __func__, i, cases[i].err, got);
+			printf("%s case %d: expected %d, got %d\n", __func__, i, c.err, got);
 		}
+
+		c.b.free(c.b.buf);
 	}
-	walloc = realloc;
 	return pass;
 }
 
 int
 test_append()
 {
+	int got;
+	int pass = 1;
 	struct {
-		void *(*walloc)(void *p, size_t size);
+		Buf b;
 		char *arg;
 		int err;
-	} cases[] = {
-		{.walloc = realloc, .arg = "",     .err = 0},
-		{.walloc = realloc, .arg = "_",    .err = 0},
-		{.walloc = realloc, .arg = "abcd", .err = 0},
-		{.walloc = oom,     .arg = "_",    .err = 1},
+	} c, cases[] = {
+		{.b = emptyBuf(realloc, free), .arg = "",     .err = 0},
+		{.b = emptyBuf(realloc, free), .arg = "_",    .err = 0},
+		{.b = emptyBuf(realloc, free), .arg = "abcd", .err = 0},
+		{.b = emptyBuf(oom,     nop),  .arg = "_",    .err = 1},
 	};
 
-	int pass = 1;
 	for (int i = 0; i < len(cases); i++) {
-		walloc = cases[i].walloc;
-		int got = append(&emptyBuf, "%s", cases[i].arg);
+		c = cases[i];
+		got = append(&c.b, "%s", c.arg);
+
 		if (got != cases[i].err) {
 			pass = 0;
-			printf("%s case %d: expected %d, got %d\n", __func__, i, cases[i].err, got);
+			printf("%s case %d: expected %d, got %d\n", __func__, i, c.err, got);
 		}
+
+		c.b.free(c.b.buf);
 	}
-	walloc = realloc;
+
 	return pass;
 }
 

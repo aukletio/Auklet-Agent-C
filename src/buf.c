@@ -1,8 +1,6 @@
-#include "buf.h"
-
 #include <stdlib.h>
 
-#include "walloc.h"
+#include "buf.h"
 
 #include <setjmp.h>
 #include <stdarg.h>
@@ -17,19 +15,26 @@ static int grow(Buf *b);
 int
 append(Buf *b, char *fmt, ...)
 {
-	int wc;
+	int wc, err;
 	va_list ap;
+
+	if (b->err)
+		return b->err;
+
 retry:
 	va_start(ap, fmt);
 	wc = vsnprintf(b->buf + b->len, b->cap - b->len, fmt, ap);
 	if (wc >= b->cap - b->len) {
-		int err = grow(b);
-		if (err)
+		err = grow(b);
+		if (err) {
+			b->err = 1;
 			return 1;
+		}
 		goto retry;
 	}
 	va_end(ap);
 	b->len += wc;
+
 	return 0;
 }
 
@@ -40,10 +45,18 @@ retry:
 int
 grow(Buf *b)
 {
-	unsigned newcap = b->cap ? b->cap * 2 : 32;
-	char *c = walloc(b->buf, newcap * sizeof(char));
-	if (!c)
+	unsigned newcap;
+	char *c;
+
+	if (b->err)
+		return b->err;
+
+	newcap = b->cap ? b->cap * 2 : 32;
+	c = b->realloc(b->buf, newcap * sizeof(char));
+	if (!c) {
+		b->err = 1;
 		return 1;
+	}
 	b->buf = c;
 	b->cap = newcap;
 	return 0;

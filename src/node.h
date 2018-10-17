@@ -14,10 +14,11 @@ typedef struct {
 
 typedef struct Node Node;
 struct Node {
+	void *(*realloc)(void *, size_t);
 	Frame f;
 	Node *parent;
 
-	/* lsamp guards nsamp in sample, marshal, and sane. */
+	/* lsamp guards nsamp in sample and marshal. */
 	pthread_mutex_t lsamp;
 	unsigned nsamp;
 
@@ -33,7 +34,8 @@ struct Node {
 	int empty;
 };
 
-#define emptyNode { \
+#define emptyNode(x) { \
+	.realloc = (x), \
 	.f = {0, 0}, \
 	.parent = NULL, \
 	.lsamp = PTHREAD_MUTEX_INITIALIZER, \
@@ -47,8 +49,7 @@ struct Node {
 	.empty = 1, \
 }
 
-Node *newNode(Frame *f, Node *parent);
-void freeNode(Node *n, int root);
+void freeNode(Node *n, int root, void (*free)(void *));
 int push(Node **sp, Frame *f);
 int pop(Node **sp);
 void sample(Node *sp);

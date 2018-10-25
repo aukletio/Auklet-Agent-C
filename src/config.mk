@@ -13,11 +13,11 @@ INSTALL = /usr/local/lib
 TIMESTAMP ?= 'no timestamp'
 
 # project structure
-MOD = buf server json node socket agent walloc
+MOD = buf server json node logger agent
 SRC = $(MOD:=.c)
 OBJ = $(MOD:=.o)
-TEST = buf json node
-GCOV = $(MOD:=.c.gcov) $(TEST:=_test.gcno) $(TEST:=_test.gcda)
+COVER = buf json node server
+GCOV = $(MOD:=.c.gcov) $(COVER:=_test.gcno) $(COVER:=_test.gcda)
 
 # utility functions
 
@@ -33,7 +33,7 @@ moduleRules = $(foreach f,$(SRC),$(call implicitRule,$f))
 define writeTest =
 
 	@echo testing $1
-	@./$1_test
+	@valgrind --error-exitcode=1 -q ./$1_test
 	@gcov $1_test.c
 	@rm -f $1_test.c.gcov # don't want coverage on the test apparatus
 	@sed -i s,Source:,Source:src/, $1.c.gcov

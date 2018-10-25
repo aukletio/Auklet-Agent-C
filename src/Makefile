@@ -31,31 +31,46 @@ internal-symbols.txt: libauklet-internal.o
 libauklet-internal.o: $(OBJ)
 	$(LD) -r $^ -o $@
 
-test: $(TEST:=_test)
-	$(foreach t,$(TEST),$(call writeTest,$t))
+test: cover #thread
 
-node_test: node_test.o walloc.o
+thread: thread_test
+	client -no-network valgrind --error-exitcode=1 -q --tool=drd ./thread_test
+
+thread_test: thread_test.c libauklet.o
+	@$(CC) $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS) -finstrument-functions -lpthread -o $@
+
+cover: $(COVER:=_test)
+	$(foreach t,$(COVER),$(call writeTest,$t))
+
+node_test: node_test.o
 	$(linkWithCoverage)
 
-node_test.o: node_test.c node.h walloc.h
+node_test.o: node_test.c node.h
 	$(compileWithCoverage)
 
-json_test: json_test.o node.o buf.o walloc.o
+json_test: json_test.o node.o buf.o
 	$(linkWithCoverage)
 
 json_test.o: json_test.c json.h node.h buf.h
 	$(compileWithCoverage)
 
-buf_test: buf_test.o walloc.o
+buf_test: buf_test.o
 	$(linkWithCoverage)
 
-buf_test.o: buf_test.c walloc.h
+buf_test.o: buf_test.c
 	$(compileWithCoverage)
+
+server_test: server_test.o logger.o buf.o
+	$(linkWithCoverage) -lpthread
+
+server_test.o: server_test.c server.h
+	$(compileWithCoverage) -lpthread
 
 clean:
 	@rm -f $(OBJ)
-	@rm -f $(TEST:=_test) $(TEST:=_test.o)
+	@rm -f $(COVER:=_test) $(COVER:=_test.o)
 	@rm -f libauklet-internal.o libauklet.o libauklet.a libauklet.tgz internal-symbols.txt
 	@rm -f $(GCOV)
+	@rm -f thread_test
 
-.PHONY: install uninstall clean test
+.PHONY: install uninstall clean test thread

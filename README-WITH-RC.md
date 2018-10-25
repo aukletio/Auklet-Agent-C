@@ -1,5 +1,11 @@
 # Changelog
 
+### [0.12.0-rc.1](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.12.0-rc.1)
+
+**Implemented enhancements:**
+
+- APM-1414   C/C++ Agent ASIL B Compliance - Add server test [#129](https://github.com/ESG-USA/Auklet-Agent-C/pull/129) ([kdsch](https://github.com/kdsch))
+
 ## [0.11.0](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.11.0)
 
 ### [0.11.0-rc.1](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.11.0-rc.1)

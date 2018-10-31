@@ -10,7 +10,8 @@ with version 1.0.0 the following compliance levels are to be maintained:
 ## Submissions
 
 To submit code changes, please open a pull request that lists and explains all 
-changes.
+changes. Syntax should follow guidelines set in 
+[https://suckless.org/coding_style/](https://suckless.org/coding_style/).
 
 If you have found a bug please check the submitted issues. If you do not see 
 your issue listed please open a new issue and we will respond as quickly as 

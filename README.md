@@ -4,10 +4,32 @@
 <a href="https://codeclimate.com/repos/599de6da0e0de702630009ca/maintainability"><img src="https://api.codeclimate.com/v1/badges/66870661edeeb2e46253/maintainability" /></a>
 <a href="https://codeclimate.com/repos/599de6da0e0de702630009ca/test_coverage"><img src="https://api.codeclimate.com/v1/badges/66870661edeeb2e46253/test_coverage" /></a>
 
-Auklet is a profiler for IoT and embedded Linux apps. Like conventional 
-benchtop C/C++ profilers, it is implemented as a library that you can link 
-your program against. Unlike benchtop profilers, it is meant to be run in 
-production and to continuously generate performance metrics.  
+This is the official C agent for Auklet. It officially supports C
+and C++, and runs on most POSIX-based operating systems (Debian, 
+Ubuntu Core, Raspbian, QNX, etc).
+
+## Features
+
+[auklet_site]: https://app.auklet.io
+[auklet_releaser]: https://github.com/aukletio/Auklet-Releaser-C
+[auklet_client]: https://github.com/aukletio/Auklet-Client-C
+[mail_auklet]: mailto:hello@auklet.io
+
+- Automatic report of unhandled exceptions
+- Automatic Function performance issue reporting
+- Location, system architecture, and system metrics identification for all 
+issues
+- Ability to define data usage restriction
+
+## Compliance
+
+Auklet is an edge first application performance monitor; therefore, starting 
+with version 1.0.0 we maintain the following compliance levels:
+
+- Automotive Safety Integrity Level B (ASIL B)
+
+If there are additional compliances that your industry requires please 
+contact the team at [hello@auklet.io][mail_auklet].
 
 ## Device Requirements
 
@@ -32,79 +54,71 @@ Auklet has also been validated for the following CPU architectures:
 
 Lastly, don't forget to ensure that your device is connected to the Internet.
 
-	
-## Downloading and Integrating the Agent
+## Quickstart
 
-When using a Makefile, include the following flags to integrate the Auklet 
+### Getting Started
+
+1. When using a Makefile, include the following flags to integrate the Auklet 
 agent
 
-    CFLAGS += -finstrument-functions -g
-    LDLIBS += libauklet.a -lpthread
-    LDFLAGS += -no-pie
+        CFLAGS += -finstrument-functions -g
+        LDLIBS += libauklet.a -lpthread
+        LDFLAGS += -no-pie
     
-    libauklet.a:
-    [curl command here]
+        libauklet.a:
+        [curl command here]
     
-The curl command at the end of the above flags will vary depending on your 
-application's target architecture. Replace the portion in [braces] above with
- the target architecture's curl command below. 
+1. The curl command at the end of the above flags will vary depending on your 
+   application's target architecture. Replace the portion in [braces] above with
+   the target architecture's curl command below. 
  
- If you are not using a Makefile, you can also use the below commands in a 
- terminal to directly download the agent to your work machine. Remember to 
- use the architecture matching your destination device's architecture, not 
- your work environment's architecture.
+ 1. If you are not using a Makefile, you can also use the below commands in a 
+    terminal to directly download the agent to your work machine. Remember to 
+    use the architecture matching your destination device's architecture, not 
+    your work environment's architecture.
 
-x86-64
-
-    curl https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-amd64-latest.tgz | tar xz
-
-ARM7
-
-    curl https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-arm-latest.tgz | tar xz
-
-ARM64
-
-    curl https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-arm64-latest.tgz | tar xz
-
-MIPS
-
-    curl https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-arm64-latest.tgz | tar xz
-
-MIPS64
-
-    curl https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-MIPS64-latest.tgz | tar xz
-
-MIPS64le
-
-    curl https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-mips64le-latest.tgz | tar xz
-
-MIPSle
-
-    curl https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-miple-latest.tgz | tar xz`
-
-<br /><br />
-If you are compiling your application with GCC, be sure to include the 
-following options in the compile invocations.
-
-When creating the object file include
-
-    ... -c -g -finstrument-functions ...
-
-and then when linking the object file with **libauklet.a** include
-
-    ... libauklet.a -lpthread -no-pie   
+    - [x86-64](https://s3.amazonawscom/auklet/agent/c/latest/libauklet-amd64-latest.tgz)
     
-## Releasing and Running with Auklet
+            curl https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-amd64-latest.tgz | tar xz
+    
+    - [ARM7](https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-arm-latest.tgz)
+    
+            curl https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-arm-latest.tgz | tar xz
 
-In order for Auklet to report your application's performance, you'll need to 
+    - [ARM64](https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-arm64-latest.tgz)
+
+            curl https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-arm64-latest.tgz | tar xz
+
+    - [MIPS](https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-arm64-latest.tgz)
+
+            curl https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-arm64-latest.tgz | tar xz
+
+    - [MIPS64](https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-MIPS64-latest.tgz)
+
+            curl https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-MIPS64-latest.tgz | tar xz
+
+    - [MIPS64le](https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-mips64le-latest.tgz)
+
+            curl https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-mips64le-latest.tgz | tar xz
+
+    - [MIPSle](https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-miple-latest.tgz)
+
+            curl https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-miple-latest.tgz | tar xz
+
+1. When compiling, include `-g -finstrument-functions`.
+
+1. When linking, include `libauklet.a -lpthread -no-pie`.   
+    
+
+### Next steps
+1. In order for Auklet to report your application's performance, you'll need to 
 perform a release whenever your code is updated and deployed. Check the 
 README for the 
-[Auklet C/C++ Releaser][releaser] for instructions.
+[Auklet C/C++ Releaser][auklet_releaser] for instructions.
 
-You application will also need to run with the Auklet client to report its 
+1. You application will also need to run with the Auklet client to report its 
 data. The C/C++ Auklet Client, and instructions for running Auklet with your 
 application, can be found in the 
-[C/C++ Auklet Client's repository][client].
+[C/C++ Auklet Client's repository][auklet_client].
 
-[releaser]: https://github.com/aukletio/Auklet-Releaser-C
-[client]: https://github.com/aukletio/Auklet-Client-C
+

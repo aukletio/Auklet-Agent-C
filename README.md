@@ -21,20 +21,14 @@ Ubuntu Core, Raspbian, QNX, etc).
 issues
 - Ability to define data usage restriction
 
-## Compliance
-
-Auklet is an edge first application performance monitor; therefore, starting 
-with version 1.0.0 we maintain the following compliance levels:
-
-- Automotive Safety Integrity Level B (ASIL B)
-
-If there are additional compliances that your industry requires please 
-contact the team at [hello@auklet.io][mail_auklet].
-
 ## Device Requirements
 
-Auklet's IoT C/C++ agent is built to run on any POSIX operating system. It
-has been validated on:
+Auklet's IoT C/C++ agent is built to run on any POSIX operating system. If 
+you don't see the OS or CPU architecture you are using for your application 
+listed below, and are wondering if Auklet will be compatible, please hit us 
+up at [hello@auklet.io][mail_auklet]. 
+
+Validated OSes:
 
 - Debian 8.6
 - Fedora 24
@@ -45,7 +39,7 @@ has been validated on:
 - Ubuntu 16.04
 - Yocto 2.2-r2
 
-Auklet has also been validated for the following CPU architectures:
+Validated CPU architectures:
 
 - x86-64
 - ARM7
@@ -66,48 +60,30 @@ agent
         LDFLAGS += -no-pie
     
         libauklet.a:
-        [curl command here]
+        curl <insert link for your cpu> | tar xz
     
 1. The curl command at the end of the above flags will vary depending on your 
-   application's target architecture. Replace the portion in [braces] above with
-   the target architecture's curl command below. 
- 
- 1. If you are not using a Makefile, you can also use the below commands in a 
-    terminal to directly download the agent to your work machine. Remember to 
-    use the architecture matching your destination device's architecture, not 
-    your work environment's architecture.
+   application's target architecture. Replace the portion with < > above with
+   the target architecture's link below. 
 
     - [x86-64](https://s3.amazonawscom/auklet/agent/c/latest/libauklet-amd64-latest.tgz)
-    
-            curl https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-amd64-latest.tgz | tar xz
-    
+        
     - [ARM7](https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-arm-latest.tgz)
     
-            curl https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-arm-latest.tgz | tar xz
-
     - [ARM64](https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-arm64-latest.tgz)
-
-            curl https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-arm64-latest.tgz | tar xz
 
     - [MIPS](https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-arm64-latest.tgz)
 
-            curl https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-arm64-latest.tgz | tar xz
-
     - [MIPS64](https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-MIPS64-latest.tgz)
-
-            curl https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-MIPS64-latest.tgz | tar xz
 
     - [MIPS64le](https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-mips64le-latest.tgz)
 
-            curl https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-mips64le-latest.tgz | tar xz
-
     - [MIPSle](https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-miple-latest.tgz)
-
-            curl https://s3.amazonaws.com/auklet/agent/c/latest/libauklet-miple-latest.tgz | tar xz
 
 1. When compiling, include `-g -finstrument-functions`.
 
-1. When linking, include `libauklet.a -lpthread -no-pie`.   
+1. When linking, include `libauklet.a -lpthread -no-pie`. **libauklet.a** is 
+downloadable from the links in step two.
     
 
 ### Next steps

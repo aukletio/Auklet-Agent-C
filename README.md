@@ -1,7 +1,6 @@
 # Auklet for C
 
 <a href="https://www.apache.org/licenses/LICENSE-2.0" alt="Apache page link -- Apache 2.0 License"><img src="https://img.shields.io/pypi/l/auklet.svg" /></a>
-<a href="https://codeclimate.com/repos/599de6da0e0de702630009ca/maintainability"><img src="https://api.codeclimate.com/v1/badges/66870661edeeb2e46253/maintainability" /></a>
 <a href="https://codeclimate.com/repos/599de6da0e0de702630009ca/test_coverage"><img src="https://api.codeclimate.com/v1/badges/66870661edeeb2e46253/test_coverage" /></a>
 
 This is the official C agent for Auklet. It officially supports C

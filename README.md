@@ -15,7 +15,7 @@ Ubuntu Core, Raspbian, QNX, etc).
 [auklet_client]: https://github.com/aukletio/Auklet-Client-C
 [mail_auklet]: mailto:hello@auklet.io
 
-- Automatic report of unhandled exceptions
+- Automatic crash reporting
 - Automatic Function performance issue reporting
 - Location, system architecture, and system metrics identification for all 
 issues

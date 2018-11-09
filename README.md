@@ -22,12 +22,12 @@ issues
 
 ## Device Requirements
 
-Auklet's IoT C/C++ agent is built to run on any POSIX operating system. If 
+Auklet's C/C++ agent is built to run on any POSIX operating system. If 
 you don't see the OS or CPU architecture you are using for your application 
 listed below, and are wondering if Auklet will be compatible, please hit us 
 up at [hello@auklet.io][mail_auklet]. 
 
-Validated OSes:
+#### Validated OSes:
 
 - Debian 8.6
 - Fedora 24
@@ -38,14 +38,19 @@ Validated OSes:
 - Ubuntu 16.04
 - Yocto 2.2-r2
 
-Validated CPU architectures:
+#### Validated CPU architectures:
 
 - x86-64
 - ARM7
 - ARM64
 - MIPS
 
-Lastly, don't forget to ensure that your device is connected to the Internet.
+### Networking
+Auklet is built to work in network constrained environments. It can operate 
+while devices are not connected to the internet and then upload data once 
+connectivity is reestablished. Auklet can also work in non-IP based 
+environments as well. For assistance with getting Auklet running in a non-IP 
+based environment contact [hello@auklet.io][mail_auklet].
 
 ## Quickstart
 

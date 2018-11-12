@@ -13,12 +13,12 @@ To submit code changes, please open a pull request that lists and explains all
 changes. Syntax should follow guidelines set in 
 [https://suckless.org/coding_style/](https://suckless.org/coding_style/).
 
-If you have found a bug please check the submitted issues. If you do not see 
-your issue listed please open a new issue and we will respond as quickly as 
+If you have found a bug, please check the submitted issues. If you do not see 
+your bug listed, please open a new issue, and we will respond as quickly as 
 possible. 
 
-If you've found a security related bug, please email our team 
-directly at [hello@auklet.io](mailto:hello@auklet.io). 
+If you've found a security related bug, please do not create an issue or PR. 
+Instead, email our team directly at [hello@auklet.io](mailto:hello@auklet.io). 
 
 # Working on the Auklet C Agent
 To test, build, and install the agent, you can clone this repo and run

@@ -99,5 +99,3 @@ README for the
 data. The C/C++ Auklet Client, and instructions for running Auklet with your 
 application, can be found in the 
 [C/C++ Auklet Client's repository][auklet_client].
-
-

@@ -18,10 +18,10 @@ your bug listed, please open a new issue, and we will respond as quickly as
 possible. 
 
 If you've found a security related bug, please do not create an issue or PR. 
-Instead, email our team directly at [hello@auklet.io](mailto:hello@auklet.io). 
+Instead, email our team directly at [security@auklet.io](mailto:security@auklet.io). 
 
 # Working on the Auklet C Agent
-To test, build, and install the agent, you can clone this repo and run
+To test, build, and install the agent, you can clone this repo and run:
 
 	make -C src/
 	

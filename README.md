@@ -3,9 +3,8 @@
 <a href="https://www.apache.org/licenses/LICENSE-2.0" alt="Apache page link -- Apache 2.0 License"><img src="https://img.shields.io/pypi/l/auklet.svg" /></a>
 <a href="https://codeclimate.com/repos/599de6da0e0de702630009ca/test_coverage"><img src="https://api.codeclimate.com/v1/badges/66870661edeeb2e46253/test_coverage" /></a>
 
-This is the C agent for Auklet. It officially supports C
-and C++, and runs on most POSIX-based operating systems (Debian, 
-Ubuntu Core, Raspbian, QNX, etc).
+This is the C agent for Auklet. It officially supports C and C++, and runs on
+most POSIX-based operating systems (Debian, Ubuntu Core, Raspbian, QNX, etc).
 
 ## Features
 
@@ -92,8 +91,7 @@ downloadable from the links above.
 ### Next Steps
 1. In order for Auklet to report your application's performance, you'll need to 
 perform a release whenever your code is updated and deployed. Check the 
-README for the 
-[Auklet C/C++ Releaser][auklet_releaser] for instructions.
+README for the [Auklet C/C++ Releaser][auklet_releaser] for instructions.
 
 1. You application will also need to run with the Auklet client to report its 
 data. The C/C++ Auklet Client, and instructions for running Auklet with your 

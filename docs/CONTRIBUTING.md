@@ -9,13 +9,12 @@ with version 1.0.0 the following compliance levels are to be maintained:
 
 ## Submissions
 
-To submit code changes, please open a pull request that lists and explains all 
-changes. Syntax should follow guidelines set in 
-[https://suckless.org/coding_style/](https://suckless.org/coding_style/).
-
-If you have found a bug, please check the submitted issues. If you do not see 
+If you have found a bug, please check the submitted issues. If you do not see
 your bug listed, please open a new issue, and we will respond as quickly as 
-possible. 
+possible.
+
+We are not accepting outside contributions at this time. If you have a feature
+request or idea, please open a new issue. 
 
 If you've found a security related bug, please do not create an issue or PR. 
 Instead, email our team directly at [security@auklet.io](mailto:security@auklet.io). 

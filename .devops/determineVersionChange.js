@@ -7,7 +7,7 @@ const apiPrefix = 'https://api.github.com/';
 const github = rp.defaults({
   baseUrl: apiPrefix,
   headers: {
-    'User-Agent': 'esg-usa-bot',
+    'User-Agent': process.env.BOT_GIT_USERNAME,
     'Authorization': `Token ${process.env.CHANGELOG_GITHUB_TOKEN}`
   },
   json: true,

@@ -85,13 +85,10 @@ crashlytics-build.properties
 
 #####=== Auklet ===#####
 auklet.conf
-lib_test
 .auklet
 .env
 src/internal-symbols.txt
-src/json_test
-src/node_test
-src/buf_test
+src/*_test
 src/*.c.gcov
 src/*.gcno
 src/*.gcda

@@ -1,4 +1,8 @@
-/* Module server provides a server for handling profile tree emission requests. */
+/* Module server provides a server to handle profile tree emission requests. */
+/* needs pthread.h */
 
-void startserver(int fd, void (*func)());
-void stopserver();
+typedef struct Server Server;
+
+Server *newServer(int fd, void (*handler)(), void *(*malloc)(size_t));
+int start(Server *s);
+int wait(Server *s, int cancel);

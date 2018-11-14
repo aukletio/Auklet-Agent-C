@@ -1,22 +1,23 @@
 /* Module agent implements an Auklet agent for C or C++ programs. */
 
+#include <pthread.h>
 #include "server.h"
 
-#include <pthread.h>
 #include <stdint.h>
 #include "node.h"
 
-#include "socket.h"
+#include "logger.h"
 
 #include <unistd.h>
 #include <signal.h>
-
 #include "buf.h"
+
 #include "json.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/time.h>
+#include <sys/stat.h>
 
 #define SAMPLE_PERIOD {.tv_sec = 0, .tv_usec = 10000}
 
@@ -30,6 +31,7 @@ static void sigerr(int n);
 static void profilehandler();
 static void siginstall(int sig, void (*handler)(int));
 static void setagentstate(int state);
+static int connecttoclient();
 static void __attribute__ ((constructor (101))) setup();
 static void __attribute__ ((destructor (101))) cleanup();
 
@@ -40,7 +42,7 @@ static void __attribute__ ((destructor (101))) cleanup();
  * functions in the program, which could include main, any functions launched
  * with pthread_create, and possibly constructors or destructors (invoked by the
  * C runtime). */
-static Node root = emptyNode;
+static Node root = emptyNode(realloc);
 
 /* sp is the stack pointer for the current thread. Since this variable is
  * declared as thread-specific, the C runtime will automatically allocate an
@@ -49,6 +51,9 @@ static __thread Node *sp = &root;
 
 /* sockfd is the file descriptor for the connection to the Auklet client. */
 static int sockfd = 0;
+
+/* server responds to emission requests received from the client. */
+static Server *server;
 
 /* agentstate allows us to enable or disable the effects of instrumentation,
  * even though there is no way to prevent the instrument functions from being
@@ -93,8 +98,11 @@ sigprof(int n)
 void
 sigerr(int n)
 {
+	Buf b = emptyBuf(realloc, free);
 	profilehandler();
-	sendstacktrace(sockfd, sp, n);
+	marshalstacktrace(&b, sp, n);
+	write(sockfd, b.buf, b.len); /* what if write fails? */
+	b.free(b.buf);
 	_exit(1);
 }
 
@@ -103,7 +111,11 @@ sigerr(int n)
 void
 profilehandler()
 {
-	sendprofile(sockfd, &root);
+	Buf b = emptyBuf(realloc, free);
+	marshalprofile(&b, &root);
+	write(sockfd, b.buf, b.len); /* what if write fails? */
+	clearcounters(&root);
+	b.free(b.buf);
 }
 
 /* siginstall installs handler as the signal handler for sig. */
@@ -124,7 +136,7 @@ void
 setagentstate(int state)
 {
 	struct itimerval sigproftimer = {SAMPLE_PERIOD, SAMPLE_PERIOD};
-	struct itimerval stop = {{0, 0}, {0, 0}};
+	struct itimerval stopinterval = {{0, 0}, {0, 0}};
 	if (agentstate == state)
 		return;
 	switch (state) {
@@ -134,11 +146,11 @@ setagentstate(int state)
 		siginstall(SIGILL, sigerr);
 		siginstall(SIGFPE, sigerr);
 		setitimer(ITIMER_PROF, &sigproftimer, NULL);
-		startserver(sockfd, profilehandler);
+		start(server);
 		break;
 	case OFF:
-		stopserver();
-		setitimer(ITIMER_PROF, &stop, NULL);
+		wait(server, 1);
+		setitimer(ITIMER_PROF, &stopinterval, NULL);
 		siginstall(SIGPROF, SIG_DFL);
 		siginstall(SIGSEGV, SIG_DFL);
 		siginstall(SIGILL, SIG_DFL);
@@ -148,12 +160,33 @@ setagentstate(int state)
 	logprint(sockfd, INFO, "agent state: %s", agentstate?"on":"off");
 }
 
+/* connecttoclient connects to the socket provided by
+ * an Auklet client and returns a valid file descriptor
+ * if the connection succeeded, othwerise -1. */
+int
+connecttoclient()
+{
+	int fd = 4;
+	struct stat buf;
+
+	if (-1 == fstat(fd, &buf))
+		return -1;
+	return fd;
+}
+
 /* setup runs before main and initializes the agent. */
 void
 setup()
 {
-	sockfd = connecttoclient();
-	dprintf(sockfd, "{\"version\":\"%s %s\"}", AUKLET_VERSION, AUKLET_TIMESTAMP);
+	int fd = connecttoclient();
+	if (-1 == fd)
+		/* We have no data connection. Dump to stdout. */
+		sockfd = 0;
+	else
+		sockfd = fd;
+
+	server = newServer(sockfd, profilehandler, malloc);
+	dprintf(sockfd, "{\"version\":\"%s %s\"}\n", AUKLET_VERSION, AUKLET_TIMESTAMP);
 	setagentstate(ON);
 }
 
@@ -163,6 +196,7 @@ cleanup()
 {
 	profilehandler();
 	setagentstate(OFF);
-	freeNode(&root, 1);
+	freeNode(&root, 1, free);
+	free(server);
 	close(sockfd);
 }

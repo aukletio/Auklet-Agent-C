@@ -2,5 +2,5 @@
 
 /* needs node.h, buf.h */
 
-int marshaltree(Buf *b, Node *n);
-int marshalstack(Buf *b, Node *sp, int sig);
+int marshalstacktrace(Buf *b, Node *sp, int sig);
+int marshalprofile(Buf *b, Node *root);

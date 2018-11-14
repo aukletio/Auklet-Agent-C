@@ -33,7 +33,7 @@ jobs:
                   curl -sL https://deb.nodesource.com/setup_8.x | sudo bash - > /dev/null
                   sudo apt -y install nodejs > /dev/null 2>&1
                   echo 'Installing C compilation requirements...'
-                  sudo apt -y install software-properties-common build-essential > /dev/null 2>&1
+                  sudo apt -y install software-properties-common build-essential valgrind > /dev/null 2>&1
             - run:
                 name: Validate PR
                 command: |

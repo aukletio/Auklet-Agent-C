@@ -1,5 +1,11 @@
 # Changelog
 
+### [0.12.0-rc.2](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.12.0-rc.2)
+
+**Implemented enhancements:**
+
+- 1.0.0 Documentation [#131](https://github.com/ESG-USA/Auklet-Agent-C/pull/131) ([nchoch](https://github.com/nchoch))
+
 ### [0.12.0-rc.1](https://github.com/ESG-USA/Auklet-Agent-C/tree/0.12.0-rc.1)
 
 **Implemented enhancements:**

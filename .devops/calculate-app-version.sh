@@ -7,17 +7,20 @@ function abortIfModeNone {
     exit 1
   fi
 }
-# When running CircleCI locally, don't do anything and use a dummy app version.
-# This skips unnecessary behaviors in a local build that won't work.
+# When running CircleCI locally or for PRs, don't do anything and use a dummy
+# app version. This skips unnecessary behaviors in a local build that won't work.
 NEW_VERSION=
 if [[ -f ~/.localCircleBuild ]]; then
   echo 'This is a local CircleCI build.'
   NEW_VERSION="0.1.0-a.local.circleci.build"
+elif [[ -f ~/.prCircleBuild ]]; then
+  echo 'This is a PR CircleCI build.'
+  NEW_VERSION="0.1.0-a.pr.circleci.build"
 else
   # Initialize.
   echo 'Initializing...'
   cd ~ # Prevents codebase contamination.
-  npm install --no-spin semver semver-extra > /dev/null 2>&1
+  npm install --no-spin request request-promise semver semver-extra > /dev/null 2>&1
   # Get PR number from the validation step.
   if [[ -f prnum.txt ]]; then
     PR_NUM=$(cat prnum.txt)
@@ -51,17 +54,17 @@ else
   fi
   # 5. Add a prerelease identifier to the version if necessary.
   GIT_SHA=$(eval cd $CIRCLE_WORKING_DIRECTORY ; git rev-parse --short HEAD | xargs)
-  if [ "$CIRCLE_BRANCH" == 'edge' ]; then
-    echo 'This is a staging release.'
+  if [ "$CIRCLE_BRANCH" == 'master' ]; then
+    echo 'This is a beta release.'
     abortIfModeNone
     NEW_VERSION="${NEW_VERSION}-beta.${CIRCLE_BUILD_NUM}+${GIT_SHA}"
-  elif [ "$CIRCLE_BRANCH" == 'master' ]; then
-    echo 'This is a QA release.'
+  elif [ "$CIRCLE_BRANCH" == 'rc' ]; then
+    echo 'This is an RC release.'
     abortIfModeNone
     # Get the new RC version for this version (1 or greater).
     NEW_RC_VERSION=$(node -e "var semver = require('semver-extra'); var rcVersion = semver.maxPrerelease(process.argv.slice(1).filter(v => v.startsWith('$NEW_VERSION'))) || '.0'; rcVersion = rcVersion.substring(rcVersion.lastIndexOf('.') + 1); rcVersion = parseInt(rcVersion) + 1; console.log(rcVersion);" $TAGS)
     NEW_VERSION="${NEW_VERSION}-rc.${NEW_RC_VERSION}+${GIT_SHA}"
-  elif [ "$CIRCLE_BRANCH" == 'production' ]; then
+  elif [ "$CIRCLE_BRANCH" == 'release' ]; then
     echo 'This is a production release.'
     abortIfModeNone
     NEW_VERSION="${NEW_VERSION}+${GIT_SHA}"

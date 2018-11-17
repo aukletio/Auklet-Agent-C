@@ -6,6 +6,7 @@ if [[ "$1" == "" ]]; then
 fi
 TARGET_ENV=$1
 VERSION="$(cat VERSION)"
+VERSION_SIMPLE=$(cat VERSION | xargs | cut -f1 -d"+")
 export TIMESTAMP="$(date --rfc-3339=seconds | sed 's/ /T/')"
 
 echo 'Compiling/packaging C agent binaries...'
@@ -20,9 +21,9 @@ do
     echo "Installing $pkg cross compilation toolchain..."
     sudo apt -y install $pkg > /dev/null 2>&1
   fi
-  CC=$cc AR=$ar LD=$ld OC=$oc NM=$nm TARNAME="$PREFIX-$arch-$VERSION.tgz" make -C src clean libauklet.tgz install
+  CC=$cc AR=$ar LD=$ld OC=$oc NM=$nm TARNAME="$PREFIX-$arch-$VERSION_SIMPLE.tgz" make -C src clean libauklet.tgz install
   CC=$cc make -C bench clean overhead
-  mv bench/overhead "$BENCH_PREFIX-$arch-$VERSION"
+  mv bench/overhead "$BENCH_PREFIX-$arch-$VERSION_SIMPLE"
   mv src/*.tgz .
   make -C src uninstall
   echo
@@ -40,11 +41,11 @@ echo 'Uploading C agent binaries to S3...'
 # Iterate over each file and upload it to S3.
 for f in ${PREFIX}-*; do
   # Upload to the internal bucket.
-  S3_LOCATION="s3://$S3_PREFIX/$VERSION/$f"
+  S3_LOCATION="s3://$S3_PREFIX/$VERSION_SIMPLE/$f"
   aws s3 cp $f $S3_LOCATION
   # Copy to the "latest" dir for production builds.
   if [[ "$TARGET_ENV" == "release" ]]; then
-    LATEST_NAME="${f/$VERSION/latest}"
+    LATEST_NAME="${f/$VERSION_SIMPLE/latest}"
     aws s3 cp $S3_LOCATION s3://$S3_PREFIX/latest/$LATEST_NAME
   fi
 done

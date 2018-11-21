@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 THIS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# Configure git for commits/pushes.
+git config --global user.email "$BOT_GIT_EMAIL"
+git config --global user.name "$BOT_GIT_NAME"
 # Get the version and drop all build metadata from it.
 VERSION=$(cat ~/.version | xargs | cut -f1 -d"+")
 # Revert to a pristine checkout.
@@ -8,7 +11,7 @@ echo 'Reverting to pristine checkout...'
 git reset --hard HEAD
 git clean -qfdx || true
 # Create release in JIRA.
-JIRA_PROJECT=$(cat .esg | jq -r .jiraProject)
+JIRA_PROJECT='APM'
 echo "Creating release in JIRA project '$JIRA_PROJECT'..."
 JIRA_DATE=$(date +'%d/%b/%Y')
 PAYLOAD="{\"name\": \"$CIRCLE_PROJECT_REPONAME $VERSION\", \"released\": true, \"userReleaseDate\": \"$JIRA_DATE\", \"project\": \"$JIRA_PROJECT\"}"
@@ -39,7 +42,7 @@ echo 'Generating changelog updates...'
 CURRENT_DIR="$(pwd)"
 cd ~ # Prevents codebase contamination.
 npm install --no-spin bluebird any-promise request-promise-any request semver semver-extra semver-sort parse-link-header > /dev/null 2>&1
-node $THIS_DIR/calculateChangelogs.js $CURRENT_DIR
+node $THIS_DIR/calculateChangelogs.js $CURRENT_DIR '0.12.0'
 eval cd $CURRENT_DIR
 # Push the changelog to GitHub.
 echo

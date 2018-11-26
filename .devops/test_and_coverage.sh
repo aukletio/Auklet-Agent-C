@@ -10,7 +10,7 @@ set -e
 # a test report was already posted for that commit. On line 19-30 we have
 # implemented a check to see if the test reporter throws this message.
 
-export CC_TEST_REPORTER_ID=aa9e2d7b11f99c79a68f15af6e6a31f2f9c640d94e9fc287d5d8938f63956cda
+export CC_TEST_REPORTER_ID=cf11f1486ed1f4afd226d206d3f80b5e5c8a0a8a76027e085ea4a0d9f4f1d2c1
 
 if [[ ! -f ~/.localCircleBuild ]]; then
   curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter

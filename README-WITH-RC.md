@@ -1,5 +1,7 @@
 # Changelog
 
+## [0.13.0](https://github.com/aukletio/Auklet-Agent-C/tree/0.13.0)
+
 ### [0.13.0-rc.2](https://github.com/aukletio/Auklet-Agent-C/tree/0.13.0-rc.2)
 
 **Fixed bugs:**

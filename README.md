@@ -1,6 +1,6 @@
 # Changelog
 
-## Merged But Unreleased
+## [0.13.0](https://github.com/aukletio/Auklet-Agent-C/tree/0.13.0)
 
 **Implemented enhancements:**
 

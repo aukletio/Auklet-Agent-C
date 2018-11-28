@@ -1,6 +1,7 @@
 amd64,cc,ar,ld,objcopy,nm,
-arm,arm-linux-gnueabihf-gcc,arm-linux-gnueabihf-ar,arm-linux-gnueabihf-ld,arm-linux-gnueabihf-objcopy,arm-linux-gnueabihf-nm,gcc-arm-linux-gnueabihf
-arm64,aarch64-linux-gnu-gcc,aarch64-linux-gnu-ar,aarch64-linux-gnu-ld,aarch64-linux-gnu-objcopy,aarch64-linux-gnu-nm,gcc-aarch64-linux-gnu
+arm6,arm-linux-gnueabihf-gcc -march=armv6 -marm,arm-linux-gnueabihf-ar,arm-linux-gnueabihf-ld,arm-linux-gnueabihf-objcopy,arm-linux-gnueabihf-nm,gcc-arm-linux-gnueabihf
+arm7,arm-linux-gnueabihf-gcc,arm-linux-gnueabihf-ar,arm-linux-gnueabihf-ld,arm-linux-gnueabihf-objcopy,arm-linux-gnueabihf-nm,gcc-arm-linux-gnueabihf
+arm8,aarch64-linux-gnu-gcc,aarch64-linux-gnu-ar,aarch64-linux-gnu-ld,aarch64-linux-gnu-objcopy,aarch64-linux-gnu-nm,gcc-aarch64-linux-gnu
 mips,mips-linux-gnu-gcc-5,mips-linux-gnu-ar,mips-linux-gnu-ld,mips-linux-gnu-objcopy,mips-linux-gnu-nm,gcc-5-mips-linux-gnu
 mipsle,mipsel-linux-gnu-gcc-5,mipsel-linux-gnu-ar,mipsel-linux-gnu-ld,mipsel-linux-gnu-objcopy,mipsel-linux-gnu-nm,gcc-5-mipsel-linux-gnu
 mips64,mips64-linux-gnuabi64-gcc-5,mips64-linux-gnuabi64-ar,mips64-linux-gnuabi64-ld,mips64-linux-gnuabi64-objcopy,mips64-linux-gnuabi64-nm,gcc-mips64-linux-gnuabi64

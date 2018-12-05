@@ -25,6 +25,9 @@ Auklet's C/C++ agent is built to run on any POSIX operating system. If you
 don't see your OS or CPU architecture listed below, you can hit us up at
 [hello@auklet.io][mail_auklet] to learn more about Auklet compatibility.
 
+We do not currently support applications that use setjmp/longjmp. If
+you need this support, please [email us][mail_auklet].
+
 #### Validated OSes:
 
 - Debian 8.6

@@ -9,6 +9,8 @@
 #include "logger.h"
 
 #include <unistd.h>
+#include "libauklet.h"
+
 #include <signal.h>
 #include "buf.h"
 
@@ -82,6 +84,22 @@ __cyg_profile_func_exit(void *fn, void *cs)
 		logprint(sockfd, FATAL, "pop failed");
 		setagentstate(OFF);
 	}
+}
+
+int
+auklet_send(const char *data, size_t size)
+{
+	/* File descriptor 3 is inherited from the Client
+	 * for transmitting custom JSON messages. */
+	int fd = 3;
+	int offset = 0;
+	while (offset < size) {
+		ssize_t wc = write(fd, data + offset, size - offset);
+		if (-1 == wc)
+			return -1;
+		offset += wc;
+	}
+	return offset;
 }
 
 /* private functions */

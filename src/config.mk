@@ -7,7 +7,7 @@ OC ?= objcopy
 NM ?= nm
 
 # agent library installation path
-INSTALL = /usr/local/lib
+INSTALL = /usr/local
 
 # Overriden by CircleCI to insert built timestamp
 TIMESTAMP ?= 'no timestamp'

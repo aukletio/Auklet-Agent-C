@@ -5,13 +5,15 @@ all: test install
 $(eval $(moduleRules))
 
 install: libauklet.a
-	sudo cp $< $(INSTALL)/$<
+	sudo cp $< $(INSTALL)/lib/libauklet.a
+	sudo cp $< $(INSTALL)/include/libauklet.h
 
 uninstall:
-	sudo rm -f $(INSTALL)/libauklet.a
+	sudo rm -f $(INSTALL)/lib/libauklet.a
+	sudo rm -f $(INSTALL)/include/libauklet.h
 
 libauklet.tgz: libauklet.a
-	tar cz -f $(TARNAME) $< ../LICENSE
+	tar cz -f $(TARNAME) libauklet.a libauklet.h ../LICENSE
 
 libauklet.a: libauklet.o
 	$(AR) rcs $@ $<
